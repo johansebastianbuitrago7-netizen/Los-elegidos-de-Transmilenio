@@ -1,9 +1,36 @@
-# Los Elegidos de TransMilenio
+# Los Elegidos de TransMilenio · Pulso Urbano V2
 
 Planeador académico de viajes dirigido, con máximo un transbordo, motor Python
 sin dependencias externas y aplicación Flask. Datos **históricos/programados**
 identificados en la presentación como GTFS de julio de 2021, no llegadas reales.
 No hay afiliación oficial ni coordenadas geográficas en los datos suministrados.
+
+
+## Qué cambia en Pulso Urbano V2
+
+Se conserva el motor y contrato R1–R10, R11 y los CSV de la V1. La consulta de horarios
+ahora parte de una estación, ofrece rutas válidas con sentido real y explica el
+próximo registro, su diferencia en minutos y los cinco eventos siguientes. Caso real:
+B10-1 / PORTAL NORTE / 09:25 → 11:33, diferencia **128 minutos**.
+
+El laboratorio de hora pico tiene modo educativo (hasta 40 pasajeros, reproducción
+por eventos y cola visible) y modo avanzado (hasta 300.000, métricas, cuatro gráficas,
+semilla y comparación A/B con exactamente las mismas llegadas). Nunca se presenta
+como demanda observada de Bogotá. Los resultados avanzados se envían agregados.
+
+Nuevos módulos: `motor/analisis_fila.py` deriva métricas del retorno existente;
+`servicios/` genera escenarios y metadatos; `static/js/horarios.js`, `laboratorio.js`,
+`producto.js` y `componentes.js` separan los flujos. No hay nuevas dependencias de
+aplicación. El análisis extra cuesta O(N log N), aparte del costo original de R10.
+
+- [Guía de horarios](docs/GUIA_HORARIOS.md)
+- [Guía del simulador](docs/GUIA_SIMULADOR_HORA_PICO.md)
+- [Diseño y experiencia V2](docs/DISENO_Y_EXPERIENCIA_V2.md)
+- [Capturas reales](docs/capturas-v2/README.md)
+
+El servidor sigue iniciándose con `python app.py`. Las nuevas rutas de lectura son
+`/api/estacion/rutas`, `/api/ruta`, `/api/horarios`; el laboratorio usa POST
+`/api/laboratorio`. El endpoint anterior `/api/operacion` se conserva.
 
 ## Ejecutar en Windows, Linux o macOS
 
@@ -36,10 +63,11 @@ python -m unittest discover -v
 python herramientas/restricciones.py
 ```
 
-Las pruebas incluyen datos reales, otras redes, FIFO de 200.000 personas,
+Las 34 pruebas actuales incluyen datos reales, otras redes, FIFO de 200.000 personas,
 588 consultas R5 comparadas con un oráculo 0-1 BFS, 200 ediciones reversibles,
 conversión GTFS, API y rendimiento. No se dispone del evaluador del profesor.
 Prueba de navegador opcional, con servidor activo: `node tests/navegador.cjs`.
+En la V2 ese comando ejecuta `tests/navegador_v2.cjs`: ocho pantallas y cinco anchos, controles FIFO, horarios, A/B y capturas.
 Requiere Playwright y Chromium, ajenos a la aplicación. En una instalación de QA
 puede instalarse Playwright con npm y proporcionar `CHROMIUM_PATH` con la ruta de
 Chromium; el valor predeterminado de esa prueba es `/usr/bin/chromium`.

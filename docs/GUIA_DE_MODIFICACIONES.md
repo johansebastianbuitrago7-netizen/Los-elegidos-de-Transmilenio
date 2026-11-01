@@ -99,3 +99,20 @@ requirements y ejecutar las pruebas independientemente. Revisar principalmente
 suposiciones de retorno y limitaciones GTFS. Proponer PR acotado; no simular autores
 y no fusionar cambios sin autorización del grupo. Repartir módulos (motor, UI,
 conversión, pruebas/docs) evita editar todos el mismo archivo.
+
+## V2: puntos de extensión concretos
+
+- Para cambiar un preset, editar servicios/laboratorio.py (distribución) y los valores
+  iniciales del formulario en laboratorio.js; mantener semilla y misma lista A/B.
+- Para añadir una métrica, calcularla en motor/analisis_fila.py con estructuras
+  permitidas, probar contra una referencia y serializarla en el servicio. No volver
+  a implementar FIFO para obtenerla. Actualizar definiciones y unidades en la guía.
+- Para cambiar los pasos visuales, editar pasos() del servicio. Los IDs deben seguir
+  representando posiciones del arreglo original y respetar resultado.abordajes.
+- Para ampliar horarios, mantener proximo_bus intacto y extender consultas auxiliares
+  sobre _horas y limite; probar cierres y edición de rutas junto con los casos reales.
+- Para cambiar la escena o controles, usar laboratorio.js; componentes.js centraliza
+  indicadores/gráficas. producto.js tiene portada e itinerario; horarios.js la consulta.
+- QA visual: `node tests/navegador_v2.cjs` con servidor activo. `APP_URL` permite puerto
+  alternativo y CHROMIUM_PATH selecciona el ejecutable de Chromium. La prueba regenera
+  docs/capturas-v2, así que revisar sus cambios antes de hacer commit.

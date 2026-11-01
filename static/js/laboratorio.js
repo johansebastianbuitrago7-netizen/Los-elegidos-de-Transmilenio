@@ -16,7 +16,7 @@ window.PulsoLab = (() => {
     return `<div class="lab-layout"><section class="card query-panel"><div class="section-code">CONFIGURA / HASTA 40 PASAJEROS</div><h2>El primer bus no siempre alcanza.</h2><form id="educativo"><label>Llegadas · minutos desde cero<textarea name="llegadas" aria-describedby="llegadas-help">0, 0, 1, 2, 5, 5, 9</textarea></label><p id="llegadas-help" class="field-help">Un número por pasajero, separado por comas. Vacío: ningún pasajero. El orden de entrada identifica P1, P2…</p><div class="field-pair">${number("frecuencia", "Bus cada (min)", 5)}${number("capacidad", "Cupos por bus", 3, 10000)}</div><button>Calcular esta fila</button></form><div id="lab-error" role="alert"></div><details><summary>¿Qué está haciendo el algoritmo?</summary><p>La cola enlazada de motor/estructuras.py conserva FRENTE y FINAL. Encolar y desencolar cuestan O(1). Usar pop(0) desplazaría a los pasajeros restantes. El motor calcula los abordajes una sola vez; los controles solo navegan por estados derivados.</p></details></section><section id="escena" class="platform-panel" aria-live="polite"><p class="loading">Preparando la fila…</p></section></div><section id="educativo-metricas"></section>`;
   }
   function avanzado() {
-    return `<section class="experiment-config"><div><div class="section-code">ESCENARIOS SINTÉTICOS / HASTA 300.000 PASAJEROS</div><h2>Una demanda. Dos decisiones.</h2><p>Ambas configuraciones reciben exactamente las mismas llegadas. Compara espera y congestión, sin deducir costos económicos.</p></div><form id="avanzado"><label>Escenario<select name="escenario"><option value="baja">Demanda baja</option><option value="media" selected>Demanda media</option><option value="intensa">Hora pico intensa</option></select></label><div class="field-pair">${number("cantidad", "Pasajeros", 300, 300000, 0)}${number("duracion", "Periodo de llegadas (min)", 60)}</div>${number("semilla", "Semilla reproducible", 42, 2147483647, 0)}<div class="compare-config"><fieldset><legend>Configuración A</legend>${number("fa", "Bus cada (min)", 5)}${number("ca", "Cupos por bus", 30, 10000)}</fieldset><fieldset><legend>Configuración B</legend>${number("fb", "Bus cada (min)", 3)}${number("cb", "Cupos por bus", 30, 10000)}</fieldset></div><button>Comparar A / B →</button></form></section><section id="comparacion" aria-live="polite"></section>`;
+    return `<section class="experiment-config"><div><div class="section-code">ESCENARIOS SINTÉTICOS / HASTA 300.000 PASAJEROS</div><h2>Una demanda. Dos decisiones.</h2><p>Ambas configuraciones reciben exactamente las mismas llegadas. Compara espera y congestión, sin deducir costos económicos.</p></div><form id="avanzado"><label>Escenario<select name="escenario"><option value="baja">Demanda baja</option><option value="media" selected>Demanda media</option><option value="intensa">Hora pico intensa</option></select></label><div class="field-pair">${number("cantidad", "Pasajeros", 300, 300000, 0)}${number("duracion", "Periodo de llegadas (min)", 60)}</div>${number("semilla", "Semilla opcional (vacío = 42)", 42, 2147483647, 0).replace(" required", "")}<div class="compare-config"><fieldset><legend>Configuración A</legend>${number("fa", "Bus cada (min)", 5)}${number("ca", "Cupos por bus", 30, 10000)}</fieldset><fieldset><legend>Configuración B</legend>${number("fb", "Bus cada (min)", 3)}${number("cb", "Cupos por bus", 30, 10000)}</fieldset></div><button>Comparar A / B →</button></form></section><section id="comparacion" aria-live="polite"></section>`;
   }
   function metricas(r) {
     const m = r.metricas;
@@ -171,6 +171,7 @@ window.PulsoLab = (() => {
             resultado = data;
             indice = 0;
             document.querySelector("#lab-error").textContent = "";
+            document.querySelector("#lab-error").className = "";
             pintar();
             document.querySelector("#educativo-metricas").innerHTML =
               `<div class="section-heading"><h2>Lo que pasó con esta fila</h2><span>Resultados finales / no cambian durante la reproducción</span></div>${metricas(data)}<details class="card"><summary>Todos los pasajeros: llegada, abordaje y espera</summary><div class="table-wrap"><table><thead><tr><th>Pasajero</th><th>Llegada (min)</th><th>Abordaje (min)</th><th>Espera (min)</th></tr></thead><tbody>${data.llegadas.map((l, i) => `<tr><td>P${i + 1}</td><td>${l}</td><td>${data.abordajes[i]}</td><td>${data.esperas[i]}</td></tr>`).join("")}</tbody></table></div></details>${graficas(data)}`;
@@ -216,7 +217,7 @@ window.PulsoLab = (() => {
               cantidad: Number(f.cantidad.value),
               duracion: Number(f.duracion.value),
               escenario: f.escenario.value,
-              semilla: Number(f.semilla.value),
+              semilla: f.semilla.value === "" ? 42 : Number(f.semilla.value),
               a: {
                 frecuencia: Number(f.fa.value),
                 capacidad: Number(f.ca.value),

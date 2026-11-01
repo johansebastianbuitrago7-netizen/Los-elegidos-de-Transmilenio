@@ -85,3 +85,60 @@ Se añadió workflow de GitHub Actions para Ubuntu/Windows y Python 3.10/3.12.
 Es una configuración preparada, no evidencia de que esos trabajos remotos hayan
 terminado ni de que Windows ya haya sido validado. La validación observada en esta
 tarea corresponde a Linux/Python 3.12.
+
+# Evolución implementada: Pulso Urbano V2
+
+Rama `codex/pulso-urbano-v2`, basada en V1 `41ebb30` (no en main).
+Contrato R1–R10 preservado, verificaciones automáticas de firmas incorporadas.
+No se modificaron CSV, PPTX, algoritmos R5, simular_fila ni workflow de CI V1.
+
+## Entrega V2
+
+- Horarios con catálogo dependiente, sentido real, próximos cinco registros,
+  diferencia definitiva en Python, escala proporcional y explicación histórica.
+- Laboratorio educativo: cola visible, bus/cupos, fichas/estados escritos,
+  anterior/siguiente/reproducir/pausar/reiniciar/velocidad; límite visual 40 personas.
+- Laboratorio avanzado: presets sintéticos, semillas, hasta 300.000 personas,
+  métricas y cuatro gráficas, A/B con la misma lista, diferencias y descarga resumen.
+- Inicio, itinerario, estaciones, ranking, administración y R11 con identidad unificada.
+- Tres guías nuevas, guías anteriores actualizadas, capturas y evidencia JSON.
+
+## Evidencia V2
+
+- **34 pruebas aprobadas**, cero fallos, errores u omitidas. Incluyen las 23 de V1.
+- Auditoría AST sin posibles violaciones; nuevos cálculos de métricas en motor usan
+  hash y ordenamiento propios. El análisis no vuelve a decidir abordajes.
+- B10-1/PORTAL NORTE verificado contra CSV: 08:00→08:18, 08:18→08:18,
+  09:25→11:33 (128 min), 11:33→11:33, 11:34→11:41.
+- Caso educativo exacto: [0,0,5,5,5,10,10], esperas [0,0,4,3,0,5,1]; cola máxima4,
+  tres buses, espera total13 y media13/7.
+- Experimento A/B real de 300.000 personas: ambos atendieron a todos, respuesta
+  serializada con json.dumps: 16.296 bytes JSON, aproximadamente 4,04 s observados en esta máquina. El formato HTTP compacto puede ocupar menos.
+  Tiempo no garantizado en otros equipos. Registro en docs/VERIFICACION_V2.json.
+- Chromium: selectores, resultados, hora exacta/vacío, itinerario con cambio,
+  controles completos, descarga A/B, cierres/undo/redo, teclado y reduced motion.
+- Ocho pantallas sin desbordamiento del documento en 1440/1024/768/390/320.
+- Ocho capturas reales, inspeccionadas; se corrigieron el itinerario recortado,
+  avisos tardíos tras navegar y una línea que mantenía indebidamente el valor de
+  fila antes del bus. Ahora ese valor se muestra como punto instantáneo.
+- Pares principales de contraste medidos: blanco/rojo5,60; papel/asfalto14,78;
+  texto secundario/papel5,68; petróleo/superficie6,01. No certifica WCAG integral.
+- `python app.py` arrancó en puerto5000; no requiere build ni nuevas dependencias.
+
+## Límites V2
+
+La animación deriva pasos pequeños O(N²), acotados a40; no se ejecuta para grandes.
+Métricas adicionales O(N log N), independientes del benchmark de la función R10.
+Series masivas muestreadas (~162 puntos) con métricas exactas previas; no se afirma
+mostrar cada fluctuación. Demanda/oferta son intervalos sintéticos, no flota real.
+No se validó con todos los lectores de pantalla ni se ejecutó Windows localmente.
+Persisten las limitaciones de V1 enumeradas arriba.
+
+## Demostración propuesta (cinco minutos)
+
+1. Inicio: consultar una conexión y señalar datos históricos.
+2. Horarios: PORTAL NORTE→B10-1→09:25; explicar 128 min y cinco registros.
+3. Planeador: 21 ANGELES→AGUAS; sentido de tramos y cambio en HEROES.
+4. Laboratorio educativo: avanzar al minuto5, ver P6 esperando; retroceder y reproducir.
+5. Comparador: intensa, semilla42, frecuencia5 vs3, cupos30; métricas y gráficas A/B.
+6. Rendimiento: medir y distinguir referencia, tiempos y carga. Revisar las guías.

@@ -189,3 +189,22 @@ no poner búsquedas ni cálculos del dominio en JavaScript. Ver guía de modific
 Ejercicios: dibujar una colisión, seguir un mergesort de ocho nombres, agregar un
 caso de empate R5, probar undo tras borrar el primer nodo y explicar la caché de
 ranking con cierres. Cada integrante debe resolver ejemplos de requisitos ajenos.
+
+## 12. Evolución V2: visualizar un resultado sin duplicar su algoritmo
+
+El laboratorio no decide en JavaScript quién sube. `simular_fila` sigue asignando
+abordajes y esperas. `AnalisisFila` agrupa esos resultados y calcula percentiles
+con el ordenamiento propio. Servicios deriva estados pequeños (llegada, bus,
+abordaje, salida); el navegador cambia de índice al pulsar Anterior/Siguiente.
+Así navegar hacia atrás nunca invoca las pilas de deshacer de la red.
+
+La fila máxima cuenta las llegadas del mismo minuto antes del bus. Esto explica
+por qué el ejemplo inicial llega a cuatro personas aunque solo una quede esperando
+después del bus de minuto 5. El análisis adicional usa O(N log N) para percentiles y
+agrupación temporal; no cambia la complejidad ni firma pública de R10.
+Para entender las gráficas reducidas y los percentiles, ver GUIA_SIMULADOR_HORA_PICO.md.
+
+Horarios reutiliza el índice de R4: siguientes_horarios hace el mismo límite binario
+inclusivo y toma como máximo cinco elementos. rutas_estacion recorre solo membresías
+de la estación y obtiene extremos de las listas dobles; no infiere sentidos por ID.
+No se añade un segundo CSV ni una fuente de datos externa. Ver GUIA_HORARIOS.md.

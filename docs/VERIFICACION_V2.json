@@ -1,0 +1,59 @@
+{
+  "python": "3.12.14",
+  "pruebas": 34,
+  "fallos": 0,
+  "errores": 0,
+  "omitidas": 0,
+  "carga_masiva": {
+    "entrada": {
+      "modo": "avanzado",
+      "cantidad": 300000,
+      "duracion": 120,
+      "escenario": "intensa",
+      "semilla": 42,
+      "a": {
+        "frecuencia": 5,
+        "capacidad": 30
+      },
+      "b": {
+        "frecuencia": 3,
+        "capacidad": 30
+      }
+    },
+    "segundos_observados": 4.04072226900098,
+    "bytes_json": 16296,
+    "huella_llegadas": "74c84cf1dd67308b045a6dd98af1889afb3162edb9d77e683c43a03ae401b0d8",
+    "metricas_a": {
+      "pasajeros": 300000,
+      "abordados": 300000,
+      "espera_media": 24938.255246666668,
+      "espera_maxima": 49877,
+      "buses": 10000,
+      "espera_total": 7481476574,
+      "espera_mediana": 24938.5,
+      "espera_p95": 47395,
+      "ocupacion_media": 1.0,
+      "cola_maxima": 299280,
+      "ultimo_abordaje": 49995
+    },
+    "metricas_b": {
+      "pasajeros": 300000,
+      "abordados": 300000,
+      "espera_media": 14939.255246666668,
+      "espera_maxima": 29879,
+      "buses": 10000,
+      "espera_total": 4481776574,
+      "espera_mediana": 14939.5,
+      "espera_p95": 28397,
+      "ocupacion_media": 1.0,
+      "cola_maxima": 298800,
+      "ultimo_abordaje": 29997
+    },
+    "filas_serie_a": {
+      "fila": 160,
+      "ocupacion": 161,
+      "distribucion": 20,
+      "demanda": 24
+    }
+  }
+}

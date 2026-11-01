@@ -36,3 +36,14 @@ Actualizar índices, conteos y operaciones inversas juntos. Agregar una prueba
 con red mínima y resultado conocido. R5 se compara además con 0-1 BFS de referencia.
 Medir rendimiento fuera de la red compartida y sin incluir carga en consultas.
 Leer las dos guías de docs antes de ampliar funcionalidades.
+
+## V2 Pulso Urbano
+
+Servicios de presentación/escenarios en servicios/. No duplicar FIFO en frontend:
+usar simular_fila y derivar métricas en motor/analisis_fila.py. El modo animado web
+está limitado a 40 personas, el avanzado a 300.000 y envía agregados; no reducir
+la capacidad del motor público por límites de renderizado. Rutas auxiliares:
+/api/estacion/rutas, /api/ruta, /api/horarios, /api/laboratorio.
+Los archivos JS por flujo están separados y no requieren build. Mantenerlos legibles.
+Rama V2 para revisión incremental hacia codex/desarrollo-integral-v1, no main.
+Ver docs/GUIA_HORARIOS.md, GUIA_SIMULADOR_HORA_PICO.md y DISENO_Y_EXPERIENCIA_V2.md.
