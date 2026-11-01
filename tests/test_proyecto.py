@@ -166,6 +166,31 @@ class Algoritmos(unittest.TestCase):
         self.assertEqual(r.pasajeros,200000);self.assertEqual(r.buses,2000)
         self.assertEqual(r.abordajes[-1],5997)
 
+    def test_fifo_referencia(self):
+        rng=random.Random(91)
+        for _ in range(100):
+            llegadas=[rng.randrange(30) for _ in range(rng.randrange(30))]
+            f=rng.randrange(1,8);cap=rng.randrange(1,6)
+            pendientes=sorted(enumerate(llegadas),key=lambda p:(p[1],p[0]))
+            esperado=[0]*len(llegadas);t=0
+            while pendientes:
+                disponibles=[p for p in pendientes if p[1]<=t][:cap]
+                for indice,llegada in disponibles:
+                    esperado[indice]=t;pendientes.remove((indice,llegada))
+                t+=f
+            self.assertEqual(simular_fila(llegadas,f,cap).abordajes,esperado)
+
+    def test_csv_invalidos(self):
+        with tempfile.TemporaryDirectory() as d:
+            escribir(d,['A','A'],[],[])
+            with self.assertRaises(ValueError):Red(d)
+            escribir(d,['A'],[('R',1,'X')],[])
+            with self.assertRaises(ValueError):Red(d)
+            escribir(d,['A'],[('R',1,'A')],[('R','A','00:99')])
+            with self.assertRaises(ValueError):Red(d)
+            Path(d,'estaciones.csv').write_text('nombre_incorrecto\nA\n')
+            with self.assertRaises(ValueError):Red(d)
+
     def test_restricciones(self):
         self.assertEqual(auditar(ROOT/'motor'),[])
         with tempfile.TemporaryDirectory() as d:
@@ -255,6 +280,10 @@ class Web(unittest.TestCase):
         for op,args in cases:
             response=self.client.post('/api/operacion',json={'operacion':op,'argumentos':args})
             self.assertEqual(response.status_code,200,(op,response.get_json()))
+        extra=next(e for e in r.nombres if e not in rec)
+        for op,args in [('agregar_parada',{'ruta':ruta,'nueva':extra,'despues_de':rec[0]}),('quitar_parada',{'ruta':ruta,'estacion':extra})]:
+            respuesta=self.client.post('/api/operacion',json={'operacion':op,'argumentos':args})
+            self.assertEqual(respuesta.status_code,200)
         response=self.client.post('/api/rendimiento',json={'base':32,'repeticiones':3})
         self.assertEqual(response.status_code,200)
     def test_errores(self):
