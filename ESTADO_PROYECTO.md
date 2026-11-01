@@ -70,3 +70,18 @@ rama de revisión, no sobrescribir esta ni fusionarla sin aprobación.
 La publicación en GitHub se informa en el mensaje final según resultado real del
 push y creación de PR. La configuración/snapshot del entorno cloud no se publica
 desde esta tarea. Los procesos locales no son una entrega persistente.
+
+## Publicación observada
+
+La rama `codex/desarrollo-integral-v1` se subió correctamente a origin.
+La creación automática del PR quedó bloqueada: tanto GraphQL (`gh pr create`)
+como REST de `api.github.com` respondieron `Forbidden` en este entorno. Esto no
+impidió el push Git. No se solicita ni se copia ningún token para evitarlo.
+El texto listo para revisión quedó en `docs/SOLICITUD_REVISION.md`.
+Puede crearse el PR manualmente desde:
+https://github.com/johansebastianbuitrago7-netizen/Los-elegidos-de-Transmilenio/compare/main...codex/desarrollo-integral-v1
+
+Se añadió workflow de GitHub Actions para Ubuntu/Windows y Python 3.10/3.12.
+Es una configuración preparada, no evidencia de que esos trabajos remotos hayan
+terminado ni de que Windows ya haya sido validado. La validación observada en esta
+tarea corresponde a Linux/Python 3.12.
