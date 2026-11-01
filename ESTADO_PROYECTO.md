@@ -142,3 +142,16 @@ Persisten las limitaciones de V1 enumeradas arriba.
 4. Laboratorio educativo: avanzar al minuto5, ver P6 esperando; retroceder y reproducir.
 5. Comparador: intensa, semilla42, frecuencia5 vs3, cupos30; métricas y gráficas A/B.
 6. Rendimiento: medir y distinguir referencia, tiempos y carga. Revisar las guías.
+
+## Publicación V2 observada
+
+La rama codex/pulso-urbano-v2 se subió correctamente a GitHub. Se intentó crear
+el PR con base **codex/desarrollo-integral-v1**, y la API GraphQL devolvió Forbidden.
+No se creó un PR automático, no se solicitaron tokens y no se cambió la política de
+red del entorno. La descripción está en docs/SOLICITUD_REVISION_V2.md.
+
+Comparación incremental para crearlo manualmente:
+https://github.com/johansebastianbuitrago7-netizen/Los-elegidos-de-Transmilenio/compare/codex/desarrollo-integral-v1...codex/pulso-urbano-v2?expand=1
+
+No se hizo merge. Main y V1 permanecen en sus commits anteriores. No se publicó ni
+alteró la configuración/snapshot del entorno cloud desde esta implementación.
