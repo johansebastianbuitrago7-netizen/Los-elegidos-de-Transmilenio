@@ -38,7 +38,7 @@ def crear_app(carpeta=None):
     @app.get('/api/red')
     def resumen():
         with candado:
-            return jsonify(estaciones=red.nombres,rutas=sorted(r for r,_ in red.rutas.elementos()),
+            return jsonify(estaciones=red.nombres,estaciones_abiertas=red.autocompletar('',len(red.nombres)),rutas=sorted(r for r,_ in red.rutas.elementos()),
                            abiertas=sum(e.abierta for _,e in red.estaciones.elementos()),
                            horarios=red.eventos,historial=historial[-40:],
                            deshacer=len(red.atras.datos),rehacer=len(red.adelante.datos))
@@ -80,7 +80,9 @@ def crear_app(carpeta=None):
 
     @app.post('/api/rendimiento')
     def rendimiento():
-        cuerpo=request.get_json(silent=True) or {}
+        cuerpo=request.get_json(silent=True)
+        if not isinstance(cuerpo,dict):
+            return jsonify(error='Se requiere un objeto JSON'),400
         try:
             return jsonify(medir(cuerpo.get('base',64),cuerpo.get('repeticiones',7)))
         except (ValueError,TypeError) as error:

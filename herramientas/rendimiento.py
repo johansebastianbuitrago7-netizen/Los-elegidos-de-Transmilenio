@@ -19,7 +19,7 @@ TEORIA = {
     'reabrir': 'O(1) amortizado promedio',
     'deshacer': 'O(1) amortizado promedio',
     'rehacer': 'O(1) amortizado promedio',
-    'simular_fila': 'O(n log n) con ordenamiento de entradas',
+    'simular_fila': 'O(n) entradas ordenadas; O(n log n) desordenadas',
 }
 
 
