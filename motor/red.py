@@ -254,3 +254,28 @@ class Red:
             return None
         rutas = [mejor[2], mejor[3]] if mejor[1] else [mejor[2]]
         return Viaje(rutas, mejor[4] if mejor[1] else None, mejor[5], mejor[0], mejor[6])
+
+    def rutas_estacion(self, estacion):
+        """Catálogo dirigido (ID, primer extremo, último extremo), solo abiertas."""
+        e = self._estacion(estacion)
+        if not e.abierta:
+            return []
+        salida = []
+        for nombre, _ in e.rutas.elementos():
+            r = self._ruta(nombre)
+            salida.append((nombre, r.primero.valor, r.ultimo.valor))
+        return ordenar(salida)
+
+    def siguientes_horarios(self, estacion, ruta, hora, cantidad=5):
+        """Extensión de lectura; mismo lower bound y semántica inclusiva que R4."""
+        tiempo = minutos(hora)
+        if type(cantidad) is not int or cantidad < 1 or cantidad > 5:
+            raise ValueError('Solicite entre uno y cinco eventos')
+        if self.estado(estacion) != 'abierta':
+            raise ValueError('La estación no existe o está cerrada')
+        recorrido = self._ruta(ruta)
+        if recorrido.indice.obtener(estacion) is None:
+            raise ValueError('La ruta no pasa por esta estación; seleccione una de sus rutas disponibles')
+        horas = self._horas(ruta, estacion)
+        i = limite(horas, tiempo)
+        return [hora_texto(h) for h in horas[i:i + cantidad]]

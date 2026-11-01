@@ -4,6 +4,8 @@ from threading import RLock
 from flask import Flask, jsonify, render_template, request
 from motor import Red, simular_fila
 from herramientas.rendimiento import medir
+from servicios.laboratorio import experimento
+from servicios.consultas import horarios, sentido
 
 
 def serializar(valor):
@@ -87,6 +89,41 @@ def crear_app(carpeta=None):
             return jsonify(medir(cuerpo.get('base',64),cuerpo.get('repeticiones',7)))
         except (ValueError,TypeError) as error:
             return jsonify(error=str(error)),400
+    @app.get('/api/estacion/rutas')
+    def rutas_estacion():
+        try:
+            with candado:
+                nombre=request.args.get('estacion','')
+                return jsonify(estacion=nombre,estado=red.estado(nombre),
+                               rutas=[{'ruta':r,'origen':a,'destino':b} for r,a,b in red.rutas_estacion(nombre)])
+        except ValueError as error:
+            return jsonify(error=str(error)),400
+
+    @app.get('/api/ruta')
+    def ruta_detalle():
+        try:
+            with candado:
+                return jsonify(sentido(red,request.args.get('ruta','')))
+        except ValueError as error:
+            return jsonify(error=str(error)),400
+
+    @app.get('/api/horarios')
+    def horarios_detalle():
+        try:
+            with candado:
+                return jsonify(horarios(red,request.args.get('estacion',''),
+                                        request.args.get('ruta',''),request.args.get('hora','')))
+        except ValueError as error:
+            return jsonify(error=str(error)),400
+
+    @app.post('/api/laboratorio')
+    def laboratorio():
+        try:
+            # No usa ni bloquea la red compartida; ambos escenarios usan la misma lista.
+            return jsonify(experimento(request.get_json(silent=True)))
+        except (ValueError,TypeError) as error:
+            return jsonify(error=str(error)),400
+
     return app
 
 if __name__=='__main__':
