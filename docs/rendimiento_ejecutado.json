@@ -1,0 +1,842 @@
+{
+  "resultados": [
+    {
+      "operacion": "estado",
+      "n": 64,
+      "mediana_us": 0.896,
+      "muestras_us": [
+        2.248,
+        1.855,
+        1.518,
+        0.87,
+        0.896,
+        0.881,
+        0.843
+      ],
+      "teoria": "O(1) promedio; O(n) peor caso hash",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "autocompletar",
+      "n": 64,
+      "mediana_us": 9.985,
+      "muestras_us": [
+        48.283,
+        11.817,
+        10.363,
+        9.985,
+        9.958,
+        9.874,
+        9.503
+      ],
+      "teoria": "O(log n + c), c = candidatos inspeccionados",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "rango",
+      "n": 64,
+      "mediana_us": 52.916,
+      "muestras_us": [
+        56.639,
+        53.867,
+        52.875,
+        52.663,
+        52.38,
+        52.916,
+        53.278
+      ],
+      "teoria": "O(log n + c); aquí c = n",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "proximo_bus",
+      "n": 64,
+      "mediana_us": 4.617,
+      "muestras_us": [
+        10.316,
+        8.095,
+        5.714,
+        4.58,
+        4.055,
+        4.617,
+        4.181
+      ],
+      "teoria": "O(log h); aquí h = 8",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "ranking",
+      "n": 64,
+      "mediana_us": 8.053,
+      "muestras_us": [
+        8.58,
+        8.265,
+        7.919,
+        7.984,
+        7.974,
+        8.372,
+        8.053
+      ],
+      "teoria": "O(k) caliente sin cierres; O(n log n) reconstrucción",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "agregar_parada",
+      "n": 64,
+      "mediana_us": 9.06,
+      "muestras_us": [
+        13.617,
+        10.828,
+        9.06,
+        8.582,
+        25.537,
+        8.095,
+        7.988
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "quitar_parada",
+      "n": 64,
+      "mediana_us": 5.643,
+      "muestras_us": [
+        5.847,
+        5.643,
+        5.518,
+        5.697,
+        5.496,
+        5.621,
+        5.741
+      ],
+      "teoria": "O(1) promedio",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "recorrido",
+      "n": 64,
+      "mediana_us": 3.295,
+      "muestras_us": [
+        4.645,
+        3.295,
+        2.57,
+        2.306,
+        3.241,
+        4.131,
+        3.466
+      ],
+      "teoria": "O(n)",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "cerrar",
+      "n": 64,
+      "mediana_us": 1.339,
+      "muestras_us": [
+        96.111,
+        1.44,
+        1.141,
+        1.412,
+        1.339,
+        1.287,
+        1.188
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "reabrir",
+      "n": 64,
+      "mediana_us": 1.165,
+      "muestras_us": [
+        1.303,
+        1.289,
+        1.099,
+        1.19,
+        1.165,
+        1.076,
+        1.078
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "deshacer",
+      "n": 64,
+      "mediana_us": 1.206,
+      "muestras_us": [
+        3.064,
+        2.379,
+        1.545,
+        1.077,
+        1.016,
+        1.206,
+        1.186
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "rehacer",
+      "n": 64,
+      "mediana_us": 1.115,
+      "muestras_us": [
+        1.784,
+        1.529,
+        1.179,
+        1.042,
+        0.996,
+        1.115,
+        1.001
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "simular_fila",
+      "n": 64,
+      "mediana_us": 33.301,
+      "muestras_us": [
+        53.964,
+        37.293,
+        33.455,
+        33.301,
+        33.038,
+        32.916,
+        31.774
+      ],
+      "teoria": "O(n) entradas ordenadas; O(n log n) desordenadas",
+      "carga_us": 3864.473
+    },
+    {
+      "operacion": "estado",
+      "n": 128,
+      "mediana_us": 0.931,
+      "muestras_us": [
+        1.75,
+        1.026,
+        0.924,
+        0.931,
+        0.824,
+        0.937,
+        0.891
+      ],
+      "teoria": "O(1) promedio; O(n) peor caso hash",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "autocompletar",
+      "n": 128,
+      "mediana_us": 10.142,
+      "muestras_us": [
+        13.493,
+        10.462,
+        10.23,
+        9.901,
+        10.071,
+        10.142,
+        9.92
+      ],
+      "teoria": "O(log n + c), c = candidatos inspeccionados",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "rango",
+      "n": 128,
+      "mediana_us": 107.288,
+      "muestras_us": [
+        113.097,
+        124.869,
+        103.952,
+        181.097,
+        107.288,
+        104.94,
+        103.575
+      ],
+      "teoria": "O(log n + c); aquí c = n",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "proximo_bus",
+      "n": 128,
+      "mediana_us": 4.185,
+      "muestras_us": [
+        9.26,
+        4.761,
+        4.154,
+        4.185,
+        4.046,
+        4.385,
+        3.943
+      ],
+      "teoria": "O(log h); aquí h = 8",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "ranking",
+      "n": 128,
+      "mediana_us": 8.146,
+      "muestras_us": [
+        8.379,
+        8.009,
+        7.946,
+        8.156,
+        7.933,
+        8.146,
+        8.165
+      ],
+      "teoria": "O(k) caliente sin cierres; O(n log n) reconstrucción",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "agregar_parada",
+      "n": 128,
+      "mediana_us": 7.812,
+      "muestras_us": [
+        13.301,
+        8.826,
+        8.25,
+        7.618,
+        7.812,
+        7.575,
+        7.727
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "quitar_parada",
+      "n": 128,
+      "mediana_us": 5.504,
+      "muestras_us": [
+        6.184,
+        5.685,
+        5.496,
+        5.702,
+        5.504,
+        5.472,
+        5.296
+      ],
+      "teoria": "O(1) promedio",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "recorrido",
+      "n": 128,
+      "mediana_us": 4.582,
+      "muestras_us": [
+        10.086,
+        7.191,
+        63.139,
+        4.582,
+        4.424,
+        4.131,
+        4.331
+      ],
+      "teoria": "O(n)",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "cerrar",
+      "n": 128,
+      "mediana_us": 1.04,
+      "muestras_us": [
+        1.624,
+        1.04,
+        1.093,
+        1.181,
+        0.968,
+        0.987,
+        1.007
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "reabrir",
+      "n": 128,
+      "mediana_us": 1.027,
+      "muestras_us": [
+        1.15,
+        1.053,
+        1.016,
+        1.065,
+        1.027,
+        0.954,
+        0.973
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "deshacer",
+      "n": 128,
+      "mediana_us": 1.027,
+      "muestras_us": [
+        2.085,
+        1.136,
+        0.986,
+        1.037,
+        0.962,
+        0.958,
+        1.027
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "rehacer",
+      "n": 128,
+      "mediana_us": 1.064,
+      "muestras_us": [
+        1.186,
+        1.123,
+        1.064,
+        1.148,
+        1.004,
+        1.008,
+        0.986
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "simular_fila",
+      "n": 128,
+      "mediana_us": 61.923,
+      "muestras_us": [
+        72.19,
+        63.882,
+        61.923,
+        62.444,
+        61.149,
+        60.281,
+        60.357
+      ],
+      "teoria": "O(n) entradas ordenadas; O(n log n) desordenadas",
+      "carga_us": 7612.767
+    },
+    {
+      "operacion": "estado",
+      "n": 256,
+      "mediana_us": 1.031,
+      "muestras_us": [
+        1.943,
+        1.123,
+        1.017,
+        1.031,
+        1.031,
+        0.983,
+        1.031
+      ],
+      "teoria": "O(1) promedio; O(n) peor caso hash",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "autocompletar",
+      "n": 256,
+      "mediana_us": 11.814,
+      "muestras_us": [
+        14.669,
+        11.814,
+        12.177,
+        11.225,
+        11.278,
+        11.876,
+        11.432
+      ],
+      "teoria": "O(log n + c), c = candidatos inspeccionados",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "rango",
+      "n": 256,
+      "mediana_us": 275.319,
+      "muestras_us": [
+        514.269,
+        249.86,
+        275.319,
+        510.723,
+        284.214,
+        252.168,
+        253.609
+      ],
+      "teoria": "O(log n + c); aquí c = n",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "proximo_bus",
+      "n": 256,
+      "mediana_us": 4.641,
+      "muestras_us": [
+        12.257,
+        5.375,
+        4.825,
+        4.455,
+        4.641,
+        4.584,
+        4.457
+      ],
+      "teoria": "O(log h); aquí h = 8",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "ranking",
+      "n": 256,
+      "mediana_us": 9.639,
+      "muestras_us": [
+        10.038,
+        18.0,
+        9.613,
+        9.314,
+        9.639,
+        9.736,
+        9.37
+      ],
+      "teoria": "O(k) caliente sin cierres; O(n log n) reconstrucción",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "agregar_parada",
+      "n": 256,
+      "mediana_us": 9.116,
+      "muestras_us": [
+        18.374,
+        10.383,
+        9.7,
+        9.116,
+        9.044,
+        8.699,
+        8.551
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "quitar_parada",
+      "n": 256,
+      "mediana_us": 6.344,
+      "muestras_us": [
+        7.514,
+        45.303,
+        6.344,
+        6.373,
+        5.939,
+        5.999,
+        6.066
+      ],
+      "teoria": "O(1) promedio",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "recorrido",
+      "n": 256,
+      "mediana_us": 8.573,
+      "muestras_us": [
+        11.913,
+        9.333,
+        8.448,
+        8.314,
+        8.573,
+        8.592,
+        8.081
+      ],
+      "teoria": "O(n)",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "cerrar",
+      "n": 256,
+      "mediana_us": 1.231,
+      "muestras_us": [
+        1.813,
+        1.176,
+        1.239,
+        1.303,
+        1.209,
+        1.231,
+        1.217
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "reabrir",
+      "n": 256,
+      "mediana_us": 1.178,
+      "muestras_us": [
+        1.23,
+        1.247,
+        1.203,
+        1.154,
+        1.178,
+        1.116,
+        1.17
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "deshacer",
+      "n": 256,
+      "mediana_us": 1.156,
+      "muestras_us": [
+        2.289,
+        1.342,
+        1.14,
+        1.143,
+        1.212,
+        1.112,
+        1.156
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "rehacer",
+      "n": 256,
+      "mediana_us": 1.175,
+      "muestras_us": [
+        1.585,
+        1.159,
+        1.158,
+        1.154,
+        1.261,
+        1.188,
+        1.175
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "simular_fila",
+      "n": 256,
+      "mediana_us": 128.956,
+      "muestras_us": [
+        128.956,
+        120.934,
+        119.304,
+        198.652,
+        231.901,
+        116.201,
+        232.145
+      ],
+      "teoria": "O(n) entradas ordenadas; O(n log n) desordenadas",
+      "carga_us": 16073.324
+    },
+    {
+      "operacion": "estado",
+      "n": 512,
+      "mediana_us": 1.04,
+      "muestras_us": [
+        2.25,
+        1.196,
+        1.006,
+        1.04,
+        1.028,
+        1.138,
+        0.954
+      ],
+      "teoria": "O(1) promedio; O(n) peor caso hash",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "autocompletar",
+      "n": 512,
+      "mediana_us": 11.617,
+      "muestras_us": [
+        14.79,
+        11.823,
+        11.362,
+        11.841,
+        11.617,
+        11.469,
+        11.2
+      ],
+      "teoria": "O(log n + c), c = candidatos inspeccionados",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "rango",
+      "n": 512,
+      "mediana_us": 541.596,
+      "muestras_us": [
+        541.596,
+        534.675,
+        751.396,
+        585.436,
+        587.032,
+        531.089,
+        490.529
+      ],
+      "teoria": "O(log n + c); aquí c = n",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "proximo_bus",
+      "n": 512,
+      "mediana_us": 4.536,
+      "muestras_us": [
+        13.227,
+        6.313,
+        4.51,
+        4.213,
+        4.536,
+        4.646,
+        4.464
+      ],
+      "teoria": "O(log h); aquí h = 8",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "ranking",
+      "n": 512,
+      "mediana_us": 9.305,
+      "muestras_us": [
+        9.295,
+        9.304,
+        8.999,
+        9.408,
+        9.313,
+        9.408,
+        9.305
+      ],
+      "teoria": "O(k) caliente sin cierres; O(n log n) reconstrucción",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "agregar_parada",
+      "n": 512,
+      "mediana_us": 8.711,
+      "muestras_us": [
+        20.31,
+        9.464,
+        8.622,
+        8.711,
+        8.523,
+        8.923,
+        8.493
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "quitar_parada",
+      "n": 512,
+      "mediana_us": 5.952,
+      "muestras_us": [
+        5.886,
+        6.33,
+        5.885,
+        6.328,
+        5.952,
+        6.157,
+        5.933
+      ],
+      "teoria": "O(1) promedio",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "recorrido",
+      "n": 512,
+      "mediana_us": 14.826,
+      "muestras_us": [
+        17.89,
+        15.399,
+        15.042,
+        14.748,
+        14.694,
+        14.826,
+        14.365
+      ],
+      "teoria": "O(n)",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "cerrar",
+      "n": 512,
+      "mediana_us": 1.302,
+      "muestras_us": [
+        1.718,
+        1.302,
+        1.285,
+        1.409,
+        1.237,
+        1.267,
+        1.363
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "reabrir",
+      "n": 512,
+      "mediana_us": 1.302,
+      "muestras_us": [
+        1.302,
+        1.205,
+        1.324,
+        1.208,
+        1.346,
+        1.347,
+        1.223
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "deshacer",
+      "n": 512,
+      "mediana_us": 1.263,
+      "muestras_us": [
+        2.273,
+        1.326,
+        1.263,
+        1.214,
+        1.254,
+        1.178,
+        1.327
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "rehacer",
+      "n": 512,
+      "mediana_us": 1.165,
+      "muestras_us": [
+        1.477,
+        1.402,
+        1.29,
+        1.161,
+        1.126,
+        1.165,
+        1.161
+      ],
+      "teoria": "O(1) amortizado promedio",
+      "carga_us": 32802.23
+    },
+    {
+      "operacion": "simular_fila",
+      "n": 512,
+      "mediana_us": 342.003,
+      "muestras_us": [
+        274.025,
+        315.054,
+        289.575,
+        362.347,
+        342.003,
+        367.975,
+        385.323
+      ],
+      "teoria": "O(n) entradas ordenadas; O(n log n) desordenadas",
+      "carga_us": 32802.23
+    }
+  ],
+  "unidad": "microsegundos",
+  "repeticiones": 7,
+  "metodologia": "Mediana de llamadas reales; preparación fuera del cronómetro. n paradas activas, n+1 estaciones, una ruta y 8n horarios. Ranking caliente k=10. Carga separada. R5 excluido.",
+  "interpretacion": "Tiempos pequeños incluyen ruido del reloj, intérprete y sistema. Hashing tiene peor caso lineal. Un n mayor no obliga a una medición mayor. Comparar tendencias, no una muestra. Las redes son sintéticas y no alteran los datos históricos.",
+  "python": "3.12.14",
+  "tipo": "Ejecución real en entorno cloud de desarrollo; no garantía para otros equipos"
+}
