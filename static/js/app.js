@@ -1,38 +1,376 @@
-'use strict';
-const sections=[['inicio','◈','Inicio'],['estaciones','⌕','Estaciones'],['planeador','→','Planeador de viajes'],['horarios','◷','Horarios'],['ranking','▥','Ranking'],['administracion','⚙','Administración'],['simulador','⇥','Simulador'],['rendimiento','⌁','Rendimiento']];
-const $=s=>document.querySelector(s);
-const iconPaths={inicio:'M3 11L12 3L21 11V21H15V14H9V21H3Z',estaciones:'M10 3A7 7 0 1 0 10 17A7 7 0 1 0 10 3M15 15L22 22',planeador:'M4 20V4H17M11 10L17 4L11 1M4 20H20',horarios:'M12 2A10 10 0 1 0 12 22A10 10 0 1 0 12 2M12 6V12L16 15',ranking:'M3 21V12H7V21M10 21V3H14V21M17 21V8H21V21',administracion:'M4 6H20M4 12H20M4 18H20M8 3V9M16 9V15M10 15V21',simulador:'M3 7H17M12 2L17 7L12 12M21 17H7M12 12L7 17L12 22',rendimiento:'M3 3V21H22M5 17L10 11L14 14L21 5'};
-const navIcon=id=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${iconPaths[id]}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+"use strict";
+const sections = [
+  ["inicio", "◈", "Inicio"],
+  ["estaciones", "⌕", "Estaciones"],
+  ["planeador", "→", "Planeador de viajes"],
+  ["horarios", "◷", "Horarios"],
+  ["ranking", "▥", "Ranking"],
+  ["administracion", "⚙", "Administración"],
+  ["simulador", "⇥", "Simulador"],
+  ["rendimiento", "⌁", "Rendimiento"],
+];
+const $ = (s) => document.querySelector(s);
+const iconPaths = {
+  inicio: "M3 11L12 3L21 11V21H15V14H9V21H3Z",
+  estaciones: "M10 3A7 7 0 1 0 10 17A7 7 0 1 0 10 3M15 15L22 22",
+  planeador: "M4 20V4H17M11 10L17 4L11 1M4 20H20",
+  horarios: "M12 2A10 10 0 1 0 12 22A10 10 0 1 0 12 2M12 6V12L16 15",
+  ranking: "M3 21V12H7V21M10 21V3H14V21M17 21V8H21V21",
+  administracion: "M4 6H20M4 12H20M4 18H20M8 3V9M16 9V15M10 15V21",
+  simulador: "M3 7H17M12 2L17 7L12 12M21 17H7M12 12L7 17L12 22",
+  rendimiento: "M3 3V21H22M5 17L10 11L14 14L21 5",
+};
+const navIcon = (id) =>
+  `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${iconPaths[id]}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let network=null;
-const field=(name,label,type='text',value='',list='')=>`<label>${label}<input name="${name}" type="${type}" value="${esc(value)}" ${list?`list="${list}"`:''} ${type==='number'?'min="0" step="1"':''} required autocomplete="off"></label>`;
-const station=(name,label)=>field(name,label,'text','',location.hash==='#administracion'?'estaciones-todas':'estaciones');
-const route=()=>field('ruta','Ruta · sentido del servicio','text','','rutas');
-const form=(op,title,fields,button='Consultar')=>`<article class="card"><h2>${title}</h2><form data-operation="${op}">${fields}<button>${button}</button></form><div class="result" aria-live="polite"></div></article>`;
-const title=(name,desc)=>`<div class="page-title"><div class="eyebrow">EXPLORA LA RED</div><h1>${name}</h1><p class="subtitle">${desc}</p></div>`;
-const notice='<div class="notice">Horarios históricos/programados · Fuente académica: GTFS de julio de 2021. No son llegadas en tiempo real.</div>';
-async function fetchJSON(url,options={}){const res=await fetch(url,options);const data=await res.json();if(!res.ok)throw Error(data.error||'No se pudo completar la solicitud');return data;}
-async function call(op,args){return (await fetchJSON('/api/operacion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({operacion:op,argumentos:args})})).resultado;}
-function toast(text){$('#aviso').textContent=text;$('#aviso').className='visible';setTimeout(()=>$('#aviso').className='',4000);}
-async function refresh(){network=await fetchJSON('/api/red');$('#estaciones').innerHTML=network.estaciones_abiertas.map(x=>`<option value="${esc(x)}">`).join('');$('#estaciones-todas').innerHTML=network.estaciones.map(x=>`<option value="${esc(x)}">`).join('');$('#rutas').innerHTML=network.rutas.map(x=>`<option value="${esc(x)}">`).join('');}
-function home(){return PulsoProducto.inicio(network,form,station);}
-function rankingHTML(data){if(!data.length)return '<p class="empty">No hay resultados.</p>';const top=data[0][1]||1;return data.map(([name,count],i)=>`<div class="bar-row"><strong>${i+1}</strong><div>${esc(name)}<div class="bar"><div style="width:${count/top*100}%"></div></div></div><strong>${count.toLocaleString('es-CO')}</strong></div>`).join('');}
-function resultHTML(op,r){if(op==='viaje'&&r)return PulsoProducto.itinerario(r);if(r===null)return '<p class="empty">'+(op==='viaje'?'No encontramos una conexión directa o con un solo transbordo entre estas estaciones en la red cargada. Comprueba que ambas estaciones estén abiertas.':'No hay un resultado disponible para esta consulta.')+'</p>';if(typeof r==='boolean')return `<p class="${r?'success':'empty'}">${r?({cerrar:'La estación fue cerrada en la red de esta sesión.',reabrir:'La estación fue reabierta.',agregar_parada:'La parada se agregó al recorrido, sin inventar horarios.',quitar_parada:'La parada se retiró del recorrido.'}[op]||'Acción aplicada al historial.'):'Sin cambios; no hay una acción aplicable.'}</p>`;if(op==='viaje'){return `<h3>${r.paradas} paradas entre estaciones · ${r.rutas.length>1?'1 transbordo':'Sin transbordo'}</h3>${r.rutas.map(x=>`<span class="route-tag">${esc(x)}</span>`).join('')}<p>${r.transbordo?'Cambiar en '+esc(r.transbordo):'Recorrido directo'}</p><ol class="itinerary">${r.estaciones.map(x=>`<li>${esc(x)}${x===r.transbordo?' · CAMBIO DE RUTA':''}</li>`).join('')}</ol><p class="muted">Diagrama del orden de paradas. No representa distancias ni tiempos de viaje.</p>`;}if(op==='ranking')return rankingHTML(r);if(op==='simular_fila')return `<div class="stats">${[[r.pasajeros,'Pasajeros'],[r.buses,'Buses con abordajes'],[r.espera_media.toFixed(2),'Espera media (min)'],[r.espera_maxima,'Espera máxima (min)']].map(([a,b])=>`<div class="stat"><strong>${a}</strong><span>${b}</span></div>`).join('')}</div><p>Primeros ${Math.min(100,r.pasajeros)} pasajeros en el orden original de entrada.</p><table><thead><tr><th>Pasajero</th><th>Abordaje (min)</th><th>Espera (min)</th></tr></thead><tbody>${r.abordajes.slice(0,100).map((a,i)=>`<tr><td>${i+1}</td><td>${a}</td><td>${r.esperas[i]}</td></tr>`).join('')}</tbody></table>`;if(Array.isArray(r))return r.length?`<ol>${r.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:'<p class="empty">No hay coincidencias.</p>';return `<p class="success">${esc(r)}</p>`;}
-function historyHTML(){return `<h2>Historial de la sesión</h2><p>Estado compartido en memoria. Reiniciar el servidor restaura los CSV originales.</p><div class="button-row"><button data-history="deshacer" ${network.deshacer?'':'disabled'}>Deshacer (${network.deshacer})</button><button class="secondary" data-history="rehacer" ${network.rehacer?'':'disabled'}>Rehacer (${network.rehacer})</button></div><ol>${network.historial.slice().reverse().map(h=>`<li>${esc(h.operacion)} · ${esc(Object.values(h.argumentos).join(' / '))}</li>`).join('')}</ol>`;}
-function render(){PulsoLab.detener();const id=location.hash.slice(1)||'inicio';const sec=sections.find(s=>s[0]===id)||sections[0];$('#breadcrumb').textContent='Movilidad / '+sec[2];$('#navegacion').innerHTML=sections.map(([s,i,t])=>`<a href="#${s}" ${s===sec[0]?'class="active" aria-current="page"':''}><span class="nav-icon">${navIcon(s)}</span>${t}</a>`).join('');let html='';switch(sec[0]){
-case 'inicio':html=home();break;
-case 'estaciones':html=title('Cada estación, una conexión','Nombres exactos de los CSV. Las consultas de listado muestran solo estaciones abiertas.')+`<div class="grid">${form('estado','Estado de una estación',station('nombre','Nombre exacto'))}${form('autocompletar','Encuentra por prefijo',field('prefijo','Comienza por (vacío: todas)').replace(' required','')+field('k','Máximo de resultados','number',10))}${form('rango','Explora un rango alfabético',station('desde','Desde (inclusive)')+station('hasta','Hasta (inclusive)'))}</div>`;break;
-case 'planeador':html=title('¿A dónde quieres llegar?','El viaje con menos paradas, respetando el sentido de cada ruta. Máximo un transbordo.')+`<div class="grid">${form('viaje','Planea tu viaje',station('origen','Estación de origen')+station('destino','Estación de destino'),'Encontrar conexión →')}<article class="card"><div class="eyebrow">CÓMO FUNCIONA</div><h2>Una conexión más clara</h2><p>El motor evalúa conexiones directas y con un cambio de ruta. Cuenta los enlaces entre paradas, no los minutos del recorrido.</p><p>Las estaciones cerradas permiten el paso, pero no subir, bajar ni cambiar de ruta.</p><p>Este planeador usa recorridos; no garantiza una conexión horaria entre buses.</p></article></div>`;break;
-case 'horarios':html=title('Cada horario tiene contexto.','Selecciona una estación, elige una ruta y descubre qué registro aparece después de la hora que necesitas.')+PulsoHorarios.html();break;
-case 'ranking':html=title('Dónde se concentran los registros','Eventos activos del CSV histórico. Este conteo no representa ocupación, demanda ni vehículos únicos.')+notice+form('ranking','Eventos programados por estación',field('k','Número de estaciones','number',10));break;
-case 'administracion':html=title('Operación de la red','Cambios reversibles en memoria. Los archivos CSV permanecen intactos.')+`<div class="grid">${form('cerrar','Cerrar una estación',station('nombre','Estación'),'Cerrar estación')}${form('reabrir','Reabrir una estación',station('nombre','Estación'),'Reabrir estación')}${form('agregar_parada','Agregar parada a una ruta',route()+station('nueva','Estación a agregar')+station('despues_de','Después de'),'Agregar parada')}${form('quitar_parada','Quitar una parada',route()+station('estacion','Estación'),'Quitar parada')}${form('recorrido','Ver el recorrido',route()+'<label class="check"><input type="checkbox" name="al_reves"> Mostrar recorrido inverso (solo visualización)</label>')}<article class="card" id="historial">${historyHTML()}</article></div>`;break;
-case 'simulador':html=title('Laboratorio de hora pico','Pon a prueba una fila de pasajeros. Sigue cada decisión y compara las condiciones.')+PulsoLab.html();break;
-case 'rendimiento':html=title('De la teoría al cronómetro','Operaciones reales sobre redes sintéticas aisladas. R5 se excluye de esta comparación.')+`<article class="card"><h2>Ejecuta un experimento</h2><p>Se crean cuatro tamaños n, 2n, 4n y 8n. Las repeticiones y los tiempos se calculan en este entorno.</p><form id="benchmark"><label>Tamaño base<select name="base"><option>32</option><option selected>64</option><option>128</option><option>256</option></select></label>${field('repeticiones','Repeticiones (3–15)','number',7)}<button>Medir operaciones</button></form><div id="mediciones" class="result" aria-live="polite"></div></article>`;break;}
-$('#pagina').innerHTML=html;document.querySelector('aside').classList.remove('menu-open');$('#menu-toggle').setAttribute('aria-expanded','false');if(sec[0]==='horarios')PulsoHorarios.iniciar({fetchJSON,esc});if(sec[0]==='simulador')PulsoLab.iniciar({fetchJSON});if(sec[0]==='administracion')$('#pagina').insertAdjacentHTML('afterbegin','<div class="admin-banner">ZONA DE OPERACIÓN / Los cambios afectan a todos los navegadores del servidor y permanecen solo en memoria. Se pueden deshacer.</div>');$('#go-plan')?.addEventListener('click',()=>location.hash='planeador');document.querySelectorAll('form[data-operation]').forEach(f=>f.addEventListener('submit',submitOperation));bindHistory();$('#benchmark')?.addEventListener('submit',benchmark);}
-function bindHistory(){document.querySelectorAll('[data-history]').forEach(b=>b.onclick=async()=>{try{b.disabled=true;await call(b.dataset.history,{});await refresh();$('#historial').innerHTML=historyHTML();bindHistory();toast('Historial actualizado');}catch(e){toast(e.message);b.disabled=false;}});}
-async function submitOperation(event){event.preventDefault();const form=event.target,op=form.dataset.operation,output=form.nextElementSibling,button=form.querySelector('button');const args=Object.fromEntries(new FormData(form));if(['cerrar','reabrir','quitar_parada','agregar_parada'].includes(op)&&!confirm('¿Aplicar este cambio a la red de la sesión? Se puede deshacer.'))return;try{if('k'in args)args.k=Number(args.k);if(op==='recorrido')args.al_reves=form.elements.al_reves.checked;if(op==='simular_fila'){if(!args.llegadas.trim()||args.llegadas.split(',').some(x=>!/^\s*\d+\s*$/.test(x)))throw Error('Escribe minutos enteros no negativos separados por comas');args.llegadas=args.llegadas.split(',').map(Number);args.frecuencia=Number(args.frecuencia);args.capacidad=Number(args.capacidad);}button.disabled=true;output.textContent='Consultando…';const r=await call(op,args);if(op==='viaje'&&r){r.sentidos=await Promise.all(r.rutas.map(ruta=>fetchJSON('/api/ruta?'+new URLSearchParams({ruta}))));}if(op==='viaje'&&!r){const estados=await Promise.all([call('estado',{nombre:args.origen}),call('estado',{nombre:args.destino})]);if(estados.some(e=>e!=='abierta'))throw Error('El origen o el destino no está abierto o no existe. Revisa Estaciones o Administración.');}output.innerHTML=resultHTML(op,r);if(['cerrar','reabrir','agregar_parada','quitar_parada'].includes(op)){await refresh();if($('#historial')){$('#historial').innerHTML=historyHTML();bindHistory();}}}catch(e){output.innerHTML=`<p class="error">${esc(e.message)}</p>`;}finally{button.disabled=false;}}
-function graph(rows){const max=Math.max(...rows.map(r=>r.mediana_us),.001),base=rows[0].n,kind=rows[0].operacion;const complexity=n=>['simular_fila','rango','recorrido'].includes(kind)?n:kind==='autocompletar'?Math.log2(n):1;const theory=rows.map(r=>rows[0].mediana_us*complexity(r.n)/complexity(base));const scale=Math.max(max,...theory)*1.15;const point=(y,i)=>`${70+i*170},${220-y/scale*175}`;return `<svg class="chart" viewBox="0 0 650 280" role="img" aria-label="Tiempo medido y referencia teórica normalizada"><path d="M70 30V220H610" fill="none" stroke="#cbd5db"/><text x="10" y="25">µs</text><text x="5" y="50">${scale.toFixed(1)}</text><text x="50" y="225">0</text><polyline points="${theory.map(point).join(' ')}" fill="none" stroke="#80969f" stroke-width="2" stroke-dasharray="6 5"/><polyline points="${rows.map((r,i)=>point(r.mediana_us,i)).join(' ')}" fill="none" stroke="#d92339" stroke-width="3"/>${rows.map((r,i)=>`<circle tabindex="0" cx="${70+i*170}" cy="${220-r.mediana_us/scale*175}" r="5" fill="#d92339"><title>n=${r.n}: ${r.mediana_us.toFixed(3)} µs</title></circle><text x="${55+i*170}" y="245">${r.n}</text>`).join('')}<text x="580" y="270">n</text></svg><p>Rojo: mediana real. Línea discontinua: tendencia teórica normalizada al primer punto (no es otra medición). Pasa el cursor o enfoca los puntos.</p>`;}
-async function benchmark(e){e.preventDefault();const b=e.target.querySelector('button'),out=$('#mediciones');try{b.disabled=true;out.textContent='Generando redes y midiendo…';const data=await fetchJSON('/api/rendimiento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries([...new FormData(e.target)].map(([k,v])=>[k,Number(v)])))});const names=[...new Set(data.resultados.map(r=>r.operacion))];out.innerHTML=`<p>${esc(data.metodologia)}</p><label>Operación a comparar<select id="serie">${names.map(n=>`<option>${n}</option>`).join('')}</select></label><div id="grafica"></div><p>${esc(data.interpretacion)}</p>`;const draw=()=>{const rows=data.resultados.filter(r=>r.operacion===$('#serie').value);$('#grafica').innerHTML=`<h3>${esc(rows[0].teoria)}</h3>${graph(rows)}<table><thead><tr><th>n</th><th>Mediana µs</th><th>Muestras µs</th><th>Carga µs (separada)</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.n}</td><td>${r.mediana_us.toFixed(3)}</td><td>${r.muestras_us.map(x=>x.toFixed(2)).join(', ')}</td><td>${r.carga_us.toFixed(1)}</td></tr>`).join('')}</tbody></table>`;};$('#serie').onchange=draw;draw();}catch(error){out.innerHTML=`<p class="error">${esc(error.message)}</p>`;}finally{b.disabled=false;}}
-$('#menu-toggle').onclick=()=>{const open=document.querySelector('aside').classList.toggle('menu-open');$('#menu-toggle').setAttribute('aria-expanded',String(open));};
-window.addEventListener('hashchange',()=>{render();$('#contenido').focus();});refresh().then(render).catch(e=>{$('#pagina').innerHTML=`<p class="error">${esc(e.message)}. Recarga para volver a intentar.</p>`;});
+const esc = (v) =>
+  String(v).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+let network = null;
+const field = (name, label, type = "text", value = "", list = "") =>
+  `<label>${label}<input name="${name}" type="${type}" value="${esc(value)}" ${list ? `list="${list}"` : ""} ${type === "number" ? 'min="0" step="1"' : ""} required autocomplete="off"></label>`;
+const station = (name, label) =>
+  field(
+    name,
+    label,
+    "text",
+    "",
+    location.hash === "#administracion" ? "estaciones-todas" : "estaciones",
+  );
+const route = () =>
+  field("ruta", "Ruta · sentido del servicio", "text", "", "rutas");
+const form = (op, title, fields, button = "Consultar") =>
+  `<article class="card"><h2>${title}</h2><form data-operation="${op}">${fields.replaceAll("<input ", `<input aria-describedby="${op}-resultado" `)}<button>${button}</button></form><div id="${op}-resultado" class="result" tabindex="0" aria-label="Resultado de ${title}" aria-live="polite"></div></article>`;
+const title = (name, desc) =>
+  `<div class="page-title"><div class="eyebrow">EXPLORA / COMPRENDE</div><h1>${name}</h1><p class="subtitle">${desc}</p></div>`;
+const notice =
+  '<div class="notice">Horarios históricos/programados · Fuente académica: GTFS de julio de 2021. No son llegadas en tiempo real.</div>';
+async function fetchJSON(url, options = {}) {
+  const res = await fetch(url, options);
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw Error("El servidor no pudo responder. Inténtalo otra vez.");
+  }
+  if (!res.ok) throw Error(data.error || "No se pudo completar la solicitud");
+  return data;
+}
+async function call(op, args) {
+  return (
+    await fetchJSON("/api/operacion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ operacion: op, argumentos: args }),
+    })
+  ).resultado;
+}
+function toast(text) {
+  $("#aviso").textContent = text;
+  $("#aviso").className = "visible";
+  setTimeout(() => ($("#aviso").className = ""), 4000);
+}
+async function refresh() {
+  network = await fetchJSON("/api/red");
+  $("#estaciones").innerHTML = network.estaciones_abiertas
+    .map((x) => `<option value="${esc(x)}">`)
+    .join("");
+  $("#estaciones-todas").innerHTML = network.estaciones
+    .map((x) => `<option value="${esc(x)}">`)
+    .join("");
+  $("#rutas").innerHTML = network.rutas
+    .map((x) => `<option value="${esc(x)}">`)
+    .join("");
+}
+function home() {
+  return PulsoProducto.inicio(network, form, station);
+}
+function rankingHTML(data) {
+  if (!data.length) return '<p class="empty">No hay resultados.</p>';
+  const top = data[0][1] || 1;
+  return data
+    .map(
+      ([name, count], i) =>
+        `<div class="bar-row"><strong>${i + 1}</strong><div>${esc(name)}<div class="bar"><div style="width:${(count / top) * 100}%"></div></div></div><strong>${count.toLocaleString("es-CO")}</strong></div>`,
+    )
+    .join("");
+}
+function resultHTML(op, r) {
+  if (op === "viaje" && r) return PulsoProducto.itinerario(r);
+  if (r === null)
+    return (
+      '<p class="empty">' +
+      (op === "viaje"
+        ? "No encontramos una conexión directa o con un solo transbordo entre estas estaciones en la red cargada. Comprueba que ambas estaciones estén abiertas."
+        : "No hay un resultado disponible para esta consulta.") +
+      "</p>"
+    );
+  if (op === "estado")
+    return `<p class="${r === "abierta" ? "success" : r === "cerrada" ? "notice" : "empty"}">Estación ${esc(r)}${r === "cerrada" ? ": no disponible para abordar, bajar o transbordar." : "."}</p>`;
+  if (typeof r === "boolean")
+    return `<p class="${r ? "success" : "empty"}">${r ? { cerrar: "La estación fue cerrada en la red de esta sesión.", reabrir: "La estación fue reabierta.", agregar_parada: "La parada se agregó al recorrido, sin inventar horarios.", quitar_parada: "La parada se retiró del recorrido." }[op] || "Acción aplicada al historial." : "Sin cambios; no hay una acción aplicable."}</p>`;
+  if (op === "ranking") return rankingHTML(r);
+  if (Array.isArray(r))
+    return r.length
+      ? `<ol>${r.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>`
+      : '<p class="empty">No hay coincidencias.</p>';
+  return `<p class="success">${esc(r)}</p>`;
+}
+function historyHTML() {
+  return `<h2>Historial de la sesión</h2><p>Estado compartido en memoria. Reiniciar el servidor restaura los CSV originales.</p><div class="button-row"><button data-history="deshacer" ${network.deshacer ? "" : "disabled"}>Deshacer (${network.deshacer})</button><button class="secondary" data-history="rehacer" ${network.rehacer ? "" : "disabled"}>Rehacer (${network.rehacer})</button></div><ol>${network.historial
+    .slice()
+    .reverse()
+    .map(
+      (h) =>
+        `<li>${esc(h.operacion)} · ${esc(Object.values(h.argumentos).join(" / "))}</li>`,
+    )
+    .join("")}</ol>`;
+}
+function render() {
+  PulsoLab.detener();
+  $("#aviso").className = "";
+  $("#aviso").textContent = "";
+  const id = location.hash.slice(1) || "inicio";
+  const sec = sections.find((s) => s[0] === id) || sections[0];
+  $("#breadcrumb").textContent = "Movilidad / " + sec[2];
+  $("#navegacion").innerHTML = sections
+    .map(
+      ([s, i, t]) =>
+        `<a href="#${s}" ${s === sec[0] ? 'class="active" aria-current="page"' : ""}><span class="nav-icon">${navIcon(s)}</span>${t}</a>`,
+    )
+    .join("");
+  let html = "";
+  switch (sec[0]) {
+    case "inicio":
+      html = home();
+      break;
+    case "estaciones":
+      html =
+        title(
+          "Cada estación, una conexión",
+          "Nombres exactos de los CSV. Las consultas de listado muestran solo estaciones abiertas.",
+        ) +
+        `<section class="station-explorer"><div class="explorer-heading"><span>01 / NOMBRE EXACTO</span><span>02 / PREFIJO</span><span>03 / RANGO</span></div><div class="grid">${form("estado", "Estado de una estación", station("nombre", "Nombre exacto"))}${form("autocompletar", "Encuentra por prefijo", field("prefijo", "Comienza por (vacío: todas)").replace(" required", "") + field("k", "Máximo de resultados", "number", 10))}${form("rango", "Explora un rango alfabético", station("desde", "Desde (inclusive)") + station("hasta", "Hasta (inclusive)"))}</div></section>`;
+      break;
+    case "planeador":
+      html =
+        title(
+          "¿A dónde quieres llegar?",
+          "Elige una conexión dirigida, con un máximo de un transbordo y el menor número de enlaces.",
+        ) + PulsoProducto.planeador(form, station);
+      break;
+    case "horarios":
+      html =
+        title(
+          "Cada horario tiene contexto.",
+          "Selecciona una estación, elige una ruta y descubre qué registro aparece después de la hora que necesitas.",
+        ) + PulsoHorarios.html();
+      break;
+    case "ranking":
+      html =
+        title(
+          "Dónde se concentran los registros",
+          "Eventos activos del CSV histórico. Este conteo no representa ocupación, demanda ni vehículos únicos.",
+        ) +
+        notice +
+        form(
+          "ranking",
+          "Eventos programados por estación",
+          field("k", "Número de estaciones", "number", 10),
+        );
+      break;
+    case "administracion":
+      html =
+        title(
+          "Operación de la red",
+          "Cambios reversibles en memoria. Los archivos CSV permanecen intactos.",
+        ) +
+        `<div class="grid">${form("cerrar", "Cerrar una estación", station("nombre", "Estación"), "Cerrar estación")}${form("reabrir", "Reabrir una estación", station("nombre", "Estación"), "Reabrir estación")}${form("agregar_parada", "Agregar parada a una ruta", route() + station("nueva", "Estación a agregar") + station("despues_de", "Después de"), "Agregar parada")}${form("quitar_parada", "Quitar una parada", route() + station("estacion", "Estación"), "Quitar parada")}${form("recorrido", "Ver el recorrido", route() + '<label class="check"><input type="checkbox" name="al_reves"> Mostrar recorrido inverso (solo visualización)</label>')}<article class="card" id="historial">${historyHTML()}</article></div>`;
+      break;
+    case "simulador":
+      html =
+        title(
+          "Laboratorio de hora pico",
+          "Pon a prueba una fila de pasajeros. Sigue cada decisión y compara las condiciones.",
+        ) + PulsoLab.html();
+      break;
+    case "rendimiento":
+      html =
+        title(
+          "De la teoría al cronómetro",
+          "Operaciones reales sobre redes sintéticas aisladas. R5 se excluye de esta comparación.",
+        ) +
+        `<article class="card"><h2>Ejecuta un experimento</h2><p>Se crean cuatro tamaños n, 2n, 4n y 8n. Las repeticiones y los tiempos se calculan en este entorno.</p><form id="benchmark"><label>Tamaño base<select name="base"><option>32</option><option selected>64</option><option>128</option><option>256</option></select></label>${field("repeticiones", "Repeticiones (3–15)", "number", 7)}<button>Medir operaciones</button></form><div id="mediciones" class="result" aria-live="polite"></div></article>`;
+      break;
+  }
+  $("#pagina").innerHTML = html;
+  if (sec[0] === "planeador") {
+    const salida = document.getElementById("viaje-resultado");
+    salida.innerHTML =
+      '<div class="journey-placeholder"><span class="section-code">ITINERARIO / R05</span><h2>Tu conexión, paso a paso.</h2><p>Indica origen y destino para ver rutas, sentido y estaciones de cambio. El esquema representa el orden de las paradas, no geografía ni distancias.</p></div>';
+    document.querySelector(".journey-panel").append(salida);
+  }
+  document.querySelector("aside").classList.remove("menu-open");
+  $("#menu-toggle").setAttribute("aria-expanded", "false");
+  if (sec[0] === "horarios") PulsoHorarios.iniciar({ fetchJSON, esc });
+  if (sec[0] === "simulador") PulsoLab.iniciar({ fetchJSON });
+  if (sec[0] === "administracion")
+    $("#pagina").insertAdjacentHTML(
+      "afterbegin",
+      '<div class="admin-banner">ZONA DE OPERACIÓN / Los cambios afectan a todos los navegadores del servidor y permanecen solo en memoria. Se pueden deshacer.</div>',
+    );
+  $("#go-plan")?.addEventListener("click", () => (location.hash = "planeador"));
+  document
+    .querySelectorAll("form[data-operation]")
+    .forEach((f) => f.addEventListener("submit", submitOperation));
+  bindHistory();
+  $("#benchmark")?.addEventListener("submit", benchmark);
+}
+function bindHistory() {
+  document.querySelectorAll("[data-history]").forEach(
+    (b) =>
+      (b.onclick = async () => {
+        try {
+          b.disabled = true;
+          await call(b.dataset.history, {});
+          await refresh();
+          if ($("#historial")) {
+            $("#historial").innerHTML = historyHTML();
+            bindHistory();
+          }
+          if ($("#historial")) toast("Historial actualizado");
+        } catch (e) {
+          toast(e.message);
+          b.disabled = false;
+        }
+      }),
+  );
+}
+async function submitOperation(event) {
+  event.preventDefault();
+  const form = event.target,
+    op = form.dataset.operation,
+    output = document.getElementById(`${op}-resultado`),
+    button = form.querySelector("button");
+  const args = Object.fromEntries(new FormData(form));
+  if (
+    ["cerrar", "reabrir", "quitar_parada", "agregar_parada"].includes(op) &&
+    !confirm("¿Aplicar este cambio a la red de la sesión? Se puede deshacer.")
+  )
+    return;
+  try {
+    if ("k" in args) args.k = Number(args.k);
+    if (op === "recorrido") args.al_reves = form.elements.al_reves.checked;
+    if (op === "simular_fila") {
+      if (
+        !args.llegadas.trim() ||
+        args.llegadas.split(",").some((x) => !/^\s*\d+\s*$/.test(x))
+      )
+        throw Error("Escribe minutos enteros no negativos separados por comas");
+      args.llegadas = args.llegadas.split(",").map(Number);
+      args.frecuencia = Number(args.frecuencia);
+      args.capacidad = Number(args.capacidad);
+    }
+    button.disabled = true;
+    output.textContent = "Consultando…";
+    const r = await call(op, args);
+    if (op === "viaje" && r) {
+      r.sentidos = await Promise.all(
+        r.rutas.map((ruta) =>
+          fetchJSON("/api/ruta?" + new URLSearchParams({ ruta })),
+        ),
+      );
+    }
+    if (op === "viaje" && !r) {
+      const estados = await Promise.all([
+        call("estado", { nombre: args.origen }),
+        call("estado", { nombre: args.destino }),
+      ]);
+      if (estados.some((e) => e !== "abierta"))
+        throw Error(
+          "El origen o el destino no está abierto o no existe. Revisa Estaciones o Administración.",
+        );
+    }
+    output.innerHTML = resultHTML(op, r);
+    if (["cerrar", "reabrir", "agregar_parada", "quitar_parada"].includes(op)) {
+      await refresh();
+      if ($("#historial")) {
+        $("#historial").innerHTML = historyHTML();
+        bindHistory();
+      }
+    }
+  } catch (e) {
+    output.innerHTML = `<p class="error">${esc(e.message)}</p>`;
+  } finally {
+    button.disabled = false;
+  }
+}
+function graph(rows) {
+  const max = Math.max(...rows.map((r) => r.mediana_us), 0.001),
+    base = rows[0].n,
+    kind = rows[0].operacion;
+  const complexity = (n) =>
+    ["simular_fila", "rango", "recorrido"].includes(kind)
+      ? n
+      : kind === "autocompletar"
+        ? Math.log2(n)
+        : 1;
+  const theory = rows.map(
+    (r) => (rows[0].mediana_us * complexity(r.n)) / complexity(base),
+  );
+  const scale = Math.max(max, ...theory) * 1.15;
+  const point = (y, i) => `${70 + i * 170},${220 - (y / scale) * 175}`;
+  return `<svg class="chart" viewBox="0 0 650 280" role="img" aria-label="Tiempo medido y referencia teórica normalizada"><path d="M70 30V220H610" fill="none" stroke="#cbd5db"/><text x="10" y="25">µs</text><text x="5" y="50">${scale.toFixed(1)}</text><text x="50" y="225">0</text><polyline points="${theory.map(point).join(" ")}" fill="none" stroke="#80969f" stroke-width="2" stroke-dasharray="6 5"/><polyline points="${rows.map((r, i) => point(r.mediana_us, i)).join(" ")}" fill="none" stroke="#d92339" stroke-width="3"/>${rows.map((r, i) => `<circle tabindex="0" cx="${70 + i * 170}" cy="${220 - (r.mediana_us / scale) * 175}" r="5" fill="#d92339"><title>n=${r.n}: ${r.mediana_us.toFixed(3)} µs</title></circle><text x="${55 + i * 170}" y="245">${r.n}</text>`).join("")}<text x="580" y="270">n</text></svg><p>Rojo: mediana real. Línea discontinua: tendencia teórica normalizada al primer punto (no es otra medición). Pasa el cursor o enfoca los puntos.</p>`;
+}
+async function benchmark(e) {
+  e.preventDefault();
+  const b = e.target.querySelector("button"),
+    out = $("#mediciones");
+  try {
+    b.disabled = true;
+    out.textContent = "Generando redes y midiendo…";
+    const data = await fetchJSON("/api/rendimiento", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(
+        Object.fromEntries(
+          [...new FormData(e.target)].map(([k, v]) => [k, Number(v)]),
+        ),
+      ),
+    });
+    const names = [...new Set(data.resultados.map((r) => r.operacion))];
+    out.innerHTML = `<p>${esc(data.metodologia)}</p><label>Operación a comparar<select id="serie">${names.map((n) => `<option>${n}</option>`).join("")}</select></label><div id="grafica"></div><p>${esc(data.interpretacion)}</p>`;
+    const draw = () => {
+      const rows = data.resultados.filter(
+        (r) => r.operacion === $("#serie").value,
+      );
+      $("#grafica").innerHTML =
+        `<h3>${esc(rows[0].teoria)}</h3>${graph(rows)}<table><thead><tr><th>n</th><th>Mediana µs</th><th>Muestras µs</th><th>Carga µs (separada)</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${r.n}</td><td>${r.mediana_us.toFixed(3)}</td><td>${r.muestras_us.map((x) => x.toFixed(2)).join(", ")}</td><td>${r.carga_us.toFixed(1)}</td></tr>`).join("")}</tbody></table>`;
+    };
+    $("#serie").onchange = draw;
+    draw();
+  } catch (error) {
+    out.innerHTML = `<p class="error">${esc(error.message)}</p>`;
+  } finally {
+    b.disabled = false;
+  }
+}
+$("#menu-toggle").onclick = () => {
+  const open = document.querySelector("aside").classList.toggle("menu-open");
+  $("#menu-toggle").setAttribute("aria-expanded", String(open));
+};
+window.addEventListener("hashchange", () => {
+  render();
+  $("#contenido").focus();
+});
+refresh()
+  .then(render)
+  .catch((e) => {
+    $("#pagina").innerHTML =
+      `<p class="error">${esc(e.message)}. Recarga para volver a intentar.</p>`;
+  });

@@ -1,10 +1,58 @@
 window.PulsoProducto = (() => {
-  const {esc}=window.PulsoVista;
-  function inicio(red,form,station) {
-    return `<section class="urban-cover"><div class="cover-copy"><span class="section-code">BOGOTÁ / RED HISTÓRICA 2021</span><h1>¿De dónde sales<br>y a dónde vas<span class="red-text">?</span></h1><p>Busca una conexión. Lee un horario. Entiende la red.</p>${form('viaje','Traza tu recorrido',station('origen','Origen')+station('destino','Destino'),'Encontrar conexión →')}</div><div class="cover-board"><div class="board-top"><span>LOS ELEGIDOS</span><span>PU / 02</span></div><h2>La ciudad se conecta.<br>Los algoritmos también.</h2><svg viewBox="0 0 400 250" role="img" aria-label="Diagrama original de conexiones esquemáticas, sin geografía"><path d="M15 220H100L180 135H310L390 45M30 20H110L235 200H390M80 250V135L180 25H310" fill="none" stroke="#507078" stroke-width="11" stroke-linejoin="round"/><path d="M15 220H100L180 135H310L390 45" fill="none" stroke="#f15a6d" stroke-width="7"/>${[[100,220],[180,135],[310,135],[110,20],[235,200],[180,25]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="#14232b" stroke="#f7f5f1" stroke-width="4"/>`).join('')}</svg><p>DIAGRAMA ESQUEMÁTICO / NO GEOGRÁFICO</p><div class="board-bottom"><span>Rutas dirigidas</span><span>Máximo un transbordo ↗</span></div></div></section><section class="network-strip" aria-label="Datos de la red">${[[red.estaciones.length,'Estaciones registradas'],[red.rutas.length,'Rutas dirigidas'],[red.horarios.toLocaleString('es-CO'),'Eventos históricos'],[red.abiertas,'Estaciones abiertas']].map(([v,t])=>`<div><strong>${v}</strong><span>${t}</span></div>`).join('')}</section><section class="editorial-links">${[['01','horarios','El horario, con contexto.','Consulta los registros que siguen a la hora que necesitas.'],['02','simulador','Pon la fila a prueba.','Sigue a cada pasajero o compara dos escenarios de hora pico.'],['03','rendimiento','Mide lo que hay detrás.','Observa cómo crecen los tiempos de los algoritmos.']].map(([n,id,t,d])=>`<a href="#${id}"><span>${n} /</span><h2>${t}</h2><p>${d}</p><b>Explorar →</b></a>`).join('')}</section>`;
+  const { esc } = window.PulsoVista;
+  function inicio(red, form, station) {
+    return `<section class="urban-cover"><div class="cover-copy"><span class="section-code">BOGOTÁ / RED HISTÓRICA 2021</span><h1>¿De dónde sales<br>y a dónde vas<span class="red-text">?</span></h1><p>Busca una conexión. Lee un horario. Entiende la red.</p>${form("viaje", "Traza tu recorrido", station("origen", "Origen") + station("destino", "Destino"), "Encontrar conexión →")}</div><div class="cover-board"><div class="board-top"><span>LOS ELEGIDOS</span><span>PU / 02</span></div><h2>La ciudad se conecta.<br>Los algoritmos también.</h2><svg viewBox="0 0 400 250" role="img" aria-label="Diagrama original de conexiones esquemáticas, sin geografía"><path d="M15 220H100L180 135H310L390 45M30 20H110L235 200H390M80 250V135L180 25H310" fill="none" stroke="#507078" stroke-width="11" stroke-linejoin="round"/><path d="M15 220H100L180 135H310L390 45" fill="none" stroke="#f15a6d" stroke-width="7"/>${[
+      [100, 220],
+      [180, 135],
+      [310, 135],
+      [110, 20],
+      [235, 200],
+      [180, 25],
+    ]
+      .map(
+        ([x, y]) =>
+          `<circle cx="${x}" cy="${y}" r="9" fill="#14232b" stroke="#f7f5f1" stroke-width="4"/>`,
+      )
+      .join(
+        "",
+      )}</svg><p>DIAGRAMA ESQUEMÁTICO / NO GEOGRÁFICO</p><div class="board-bottom"><span>Rutas dirigidas</span><span>Máximo un transbordo ↗</span></div></div></section><section class="network-strip" aria-label="Datos de la red">${[
+      [red.estaciones.length, "Estaciones registradas"],
+      [red.rutas.length, "Rutas dirigidas"],
+      [red.horarios.toLocaleString("es-CO"), "Eventos históricos"],
+      [red.abiertas, "Estaciones abiertas"],
+    ]
+      .map(([v, t]) => `<div><strong>${v}</strong><span>${t}</span></div>`)
+      .join("")}</section><section class="editorial-links">${[
+      [
+        "01",
+        "horarios",
+        "El horario, con contexto.",
+        "Consulta los registros que siguen a la hora que necesitas.",
+      ],
+      [
+        "02",
+        "simulador",
+        "Pon la fila a prueba.",
+        "Sigue a cada pasajero o compara dos escenarios de hora pico.",
+      ],
+      [
+        "03",
+        "rendimiento",
+        "Mide lo que hay detrás.",
+        "Observa cómo crecen los tiempos de los algoritmos.",
+      ],
+    ]
+      .map(
+        ([n, id, t, d]) =>
+          `<a href="#${id}"><span>${n} /</span><h2>${t}</h2><p>${d}</p><b>Explorar →</b></a>`,
+      )
+      .join("")}</section>`;
   }
-  function itinerario(r){
-    return `<div class="journey-summary"><span class="section-code">CONEXIÓN ENCONTRADA / ESQUEMA SIN GEOGRAFÍA</span><h2>${esc(r.estaciones[0])} → ${esc(r.estaciones.at(-1))}</h2><div class="journey-count"><strong>${r.paradas}</strong><span>enlaces entre paradas<br>${r.transbordo?'1 transbordo':'Sin transbordo'}</span></div></div>${r.tramos.map((tramo,i)=>`<section class="journey-leg"><div class="leg-label"><span class="route-tag">${esc(r.rutas[i])}</span><span>TRAMO ${i+1}</span></div><p class="service-direction">Sentido: ${esc(r.sentidos?.[i]?.origen||tramo[0])} → ${esc(r.sentidos?.[i]?.destino||tramo.at(-1))}</p><ol class="itinerary">${tramo.map((e,j)=>`<li class="${e===r.transbordo?'transfer':j===0?'origin':j===tramo.length-1?'destination':''}"><b>${esc(e)}</b><small>${e===r.transbordo?(i===0?'Baja aquí y cambia de ruta':'Continúa en la segunda ruta'):j===0?'Origen del tramo':j===tramo.length-1?'Destino del tramo':'Parada intermedia'}</small></li>`).join('')}</ol></section>`).join('')}${!r.tramos.length?'<p>Ya estás en el destino: no necesitas tomar una ruta.</p>':''}<div class="note">El motor minimiza enlaces, no minutos. No calcula tarifas ni garantiza conexiones horarias. Puede atravesar estaciones cerradas, pero nadie sube, baja o transborda en ellas.</div>`;
+  function itinerario(r) {
+    return `<div class="journey-summary"><span class="section-code">CONEXIÓN ENCONTRADA / ESQUEMA SIN GEOGRAFÍA</span><h2>${esc(r.estaciones[0])} → ${esc(r.estaciones.at(-1))}</h2><div class="journey-count"><strong>${r.paradas}</strong><span>enlaces entre paradas<br>${r.transbordo ? "1 transbordo" : "Sin transbordo"}</span></div></div>${r.tramos.map((tramo, i) => `<section class="journey-leg"><div class="leg-label"><span class="route-tag">${esc(r.rutas[i])}</span><span>TRAMO ${i + 1}</span></div><p class="service-direction">Sentido: ${esc(r.sentidos?.[i]?.origen || tramo[0])} → ${esc(r.sentidos?.[i]?.destino || tramo.at(-1))}</p><ol class="itinerary">${tramo.map((e, j) => `<li class="${e === r.transbordo ? "transfer" : j === 0 ? "origin" : j === tramo.length - 1 ? "destination" : ""}"><b>${esc(e)}</b><small>${e === r.transbordo ? (i === 0 ? "Baja aquí y cambia de ruta" : "Continúa en la segunda ruta") : j === 0 ? "Origen del tramo" : j === tramo.length - 1 ? "Destino del tramo" : "Parada intermedia"}</small></li>`).join("")}</ol></section>`).join("")}${!r.tramos.length ? "<p>Ya estás en el destino: no necesitas tomar una ruta.</p>" : ""}<div class="note">El motor minimiza enlaces, no minutos. No calcula tarifas ni garantiza conexiones horarias. Puede atravesar estaciones cerradas, pero nadie sube, baja o transborda en ellas.</div>`;
   }
-  return {inicio,itinerario};
+  function planeador(form, station) {
+    return `<section class="planner-layout"><div>${form("viaje", "Traza tu conexión", station("origen", "Estación de origen") + station("destino", "Estación de destino"), "Encontrar conexión →")}<details class="card"><summary>Cómo se elige el viaje</summary><p>El motor evalúa viajes directos y con un cambio. Cuenta enlaces entre estaciones, no minutos. Nadie sube, baja ni transborda en estaciones cerradas, aunque el bus pueda atravesarlas.</p><p>El resultado no garantiza la sincronización horaria de dos servicios.</p></details></div><article class="journey-panel"></article></section>`;
+  }
+  return { inicio, itinerario, planeador };
 })();

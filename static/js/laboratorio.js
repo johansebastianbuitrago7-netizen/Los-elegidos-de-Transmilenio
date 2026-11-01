@@ -1,62 +1,285 @@
 window.PulsoLab = (() => {
-  const {esc,numero,indicador,grafico,barras}=window.PulsoVista;
-  let timer=null, resultado=null,indice=0;
-  function detener(){clearInterval(timer);timer=null;}
-  const number=(name,label,value,max=1440,min=1)=>`<label>${label}<input type="number" name="${name}" value="${value}" min="${min}" max="${max}" step="1" required></label>`;
-  function html(){return `<div class="lab-intro"><span class="lab-stamp">MODELO ACADÉMICO / R10</span><p>¿Qué pasa cuando llegan más pasajeros de los que puede llevar el siguiente bus? Explora una fila y cambia las condiciones. Las llegadas son sintéticas, no demanda observada de Bogotá.</p></div><div class="mode-tabs" role="group" aria-label="Modo del laboratorio"><button id="modo-aprender" aria-pressed="true">01 / Aprende con una fila</button><button id="modo-avanzado" aria-pressed="false">02 / Experimenta y compara</button></div><div id="lab-modo"></div>`;}
-  function educativo(){return `<div class="lab-layout"><section class="card query-panel"><div class="section-code">CONFIGURA / HASTA 40 PASAJEROS</div><h2>El primer bus no siempre alcanza.</h2><form id="educativo"><label>Llegadas · minutos desde cero<textarea name="llegadas" aria-describedby="llegadas-help">0, 0, 1, 2, 5, 5, 9</textarea></label><p id="llegadas-help" class="field-help">Un número por pasajero, separado por comas. Vacío: ningún pasajero. El orden de entrada identifica P1, P2…</p><div class="field-pair">${number('frecuencia','Bus cada (min)',5)}${number('capacidad','Cupos por bus',3,10000)}</div><button>Calcular esta fila</button></form><div id="lab-error" role="alert"></div><details><summary>¿Qué está haciendo el algoritmo?</summary><p>La cola enlazada de motor/estructuras.py conserva FRENTE y FINAL. Encolar y desencolar cuestan O(1). Usar pop(0) desplazaría a los pasajeros restantes. El motor calcula los abordajes una sola vez; los controles solo navegan por estados derivados.</p></details></section><section id="escena" class="platform-panel" aria-live="polite"><p class="loading">Preparando la fila…</p></section></div><section id="educativo-metricas"></section>`;}
-  function avanzado(){return `<section class="experiment-config"><div><div class="section-code">ESCENARIOS SINTÉTICOS / HASTA 300.000 PASAJEROS</div><h2>Una demanda. Dos decisiones.</h2><p>Ambas configuraciones reciben exactamente las mismas llegadas. Compara espera y congestión, sin deducir costos económicos.</p></div><form id="avanzado"><label>Escenario<select name="escenario"><option value="baja">Demanda baja</option><option value="media" selected>Demanda media</option><option value="intensa">Hora pico intensa</option></select></label><div class="field-pair">${number('cantidad','Pasajeros',300,300000,0)}${number('duracion','Periodo de llegadas (min)',60)}</div>${number('semilla','Semilla reproducible',42,2147483647,0)}<div class="compare-config"><fieldset><legend>Configuración A</legend>${number('fa','Bus cada (min)',5)}${number('ca','Cupos por bus',30,10000)}</fieldset><fieldset><legend>Configuración B</legend>${number('fb','Bus cada (min)',3)}${number('cb','Cupos por bus',30,10000)}</fieldset></div><button>Comparar A / B →</button></form></section><section id="comparacion" aria-live="polite"></section>`;}
-  function metricas(r){const m=r.metricas;return `<div class="metric-grid">${[
-    [m.pasajeros,'Pasajeros simulados',''],[m.abordados,'Pasajeros abordados',''],[m.espera_media,'Espera media','min'],[m.espera_maxima,'Espera máxima','min'],[m.espera_mediana,'Mediana de espera','min'],[m.espera_p95,'Percentil 95 de espera','min'],[m.buses,'Buses con abordajes',''],[m.ocupacion_media*100,'Ocupación media (buses usados)','%'],[m.cola_maxima,'Máxima fila antes de abordar',''],[m.ultimo_abordaje,'Último abordaje desde cero','min']].map(v=>indicador(...v)).join('')}</div>`;}
-  function graficas(r){const s=r.series;return `<p class="field-help">${r.resumen_series?'Series reducidas por bloques; se conserva el máximo de fila y los extremos. No se representan individualmente todos los eventos.':'Se representan los eventos calculados.'} Puntos y barras admiten foco de teclado y detalles textuales.</p><div class="grid plots">${grafico('01 / Evolución de la fila',s.fila,['Antes de abordar','Después de abordar'],[1,2],['Minuto','Pasajeros antes','Pasajeros después'],true)}<section class="plot"><h3>02 / Ocupación de buses utilizados</h3><div class="occupancy-bars">${s.ocupacion.map(([t,n,v])=>`<button type="button" style="--ocupacion:${n/r.capacidad*100}%" aria-label="Minuto ${t}: ${n} ocupados y ${v} libres" title="Minuto ${t}: ${n} ocupados / ${v} libres"><span></span></button>`).join('')}</div><p class="field-help">Una barra por bus mostrado. Relleno: cupos ocupados; trama: libres. No incluye salidas sin abordajes.</p><details><summary>Detalle de ocupación</summary><div class="table-wrap"><table><thead><tr><th>Minuto</th><th>Ocupados</th><th>Libres</th></tr></thead><tbody>${s.ocupacion.map(f=>`<tr>${f.map(x=>`<td>${numero(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details></section>${barras('03 / Distribución de esperas',s.distribucion,f=>`${f[0]}–${f[1]} min`,2,'Pasajeros en cada intervalo inclusivo; se contabilizan todos.')}${grafico('04 / Llegadas frente a cupos por intervalo',s.demanda,['Llegadas','Cupos en el inicio'],[2,3],['Inicio del intervalo (min)','Llegadas','Cupos por bus'])}</div><p class="field-help">Demanda: intervalos [t,t+frecuencia), con un bus de capacidad fija en el inicio. Solo se muestran bloques con llegadas. No implica que quien llegue después del inicio aborde ese bus.</p>`;}
-  function pintar(){
-    if(!resultado || !document.querySelector('#escena')){detener();return;}
-    const p=resultado.pasos[indice],total=resultado.pasos.length;
-    const token=(i,estado)=>`<span class="passenger ${estado}" title="P${i+1}: llegó en ${resultado.llegadas[i]}, aborda en ${resultado.abordajes[i]}">P${i+1}</span>`;
-    const fases={inicio:'LISTOS PARA COMENZAR',llegadas:'ENCOLAR / LLEGADAS',bus:'BUS EN LA PLATAFORMA',abordaje:'DESENCOLAR / ABORDAJE',salida:'SALIDA / FILA RESTANTE'};
-    document.querySelector('#escena').innerHTML=`<div class="scene-heading"><div><span class="section-code">ESTACIÓN EXPERIMENTAL</span><h2>Minuto <strong>${p.minuto}</strong></h2></div><span class="phase-label">${fases[p.fase]}</span></div><div class="platform"><div class="queue-zone"><div class="step-label">ZONA DE ESPERA / ${p.fila.length} EN FILA</div><div class="fifo"><b>FRENTE →</b>${p.fila.map(i=>token(i,'waiting')).join('')||'<span class="muted">Fila vacía</span>'}<b>← FINAL</b></div></div><div class="bus-scene"><div class="bus-body"><span>BUS / ${resultado.capacidad} CUPOS</span><div>${p.abordando.map(i=>token(i,'boarding')).join('')||'<small>'+(['bus','abordaje'].includes(p.fase)?'Esperando abordaje':'Fuera de plataforma')+'</small>'}</div><span>${p.fase==='abordaje'?p.cupos:resultado.capacidad} cupos ${p.fase==='abordaje'?'libres':'por bus'}</span></div></div></div><p class="step-explanation">${esc(p.explicacion)}</p><div class="passenger-register">${resultado.llegadas.map((a,i)=>{const estado=p.atendidos.includes(i)?'done':p.abordando.includes(i)?'boarding':p.fila.includes(i)?'waiting':'future';const texto={done:'Ya abordó',boarding:'Abordando',waiting:'En fila',future:'Aún no llegó'}[estado];return `<div>${token(i,estado)}<small>${texto}</small></div>`;}).join('')}</div><div class="playback"><button id="anterior" class="secondary" ${indice===0?'disabled':''}>Anterior</button><button id="siguiente" ${indice===total-1?'disabled':''}>Siguiente</button><button id="reproducir" class="secondary" ${indice===total-1?'disabled':''}>Reproducir</button><button id="pausar" class="secondary" ${!timer?'disabled':''}>Pausar</button><button id="reiniciar" class="secondary">Reiniciar</button></div><div class="playback-meta"><span>Paso ${indice+1} de ${total} · Datos calculados una vez</span><label>Velocidad<select id="velocidad"><option value="1400">Lenta</option><option value="800" selected>Normal</option><option value="350">Rápida</option></select></label></div>`;
-    const velocidad=document.querySelector('#velocidad');velocidad.value=String(resultado.velocidad||800);
-    const mover=cambio=>{detener();indice=Math.max(0,Math.min(total-1,indice+cambio));pintar();};
-    document.querySelector('#anterior').onclick=()=>mover(-1);
-    document.querySelector('#siguiente').onclick=()=>mover(1);
-    document.querySelector('#reiniciar').onclick=()=>{detener();indice=0;pintar();};
-    document.querySelector('#pausar').onclick=()=>{detener();pintar();};
-    const play=()=>{detener();timer=setInterval(()=>{if(indice<total-1){indice++;pintar();}if(indice===total-1){detener();pintar();}},resultado.velocidad||800);pintar();};
-    document.querySelector('#reproducir').onclick=play;
-    velocidad.onchange=()=>{resultado.velocidad=Number(velocidad.value);if(timer)play();};
+  const { esc, numero, indicador, grafico, barras } = window.PulsoVista;
+  let timer = null,
+    resultado = null,
+    indice = 0;
+  function detener() {
+    clearInterval(timer);
+    timer = null;
   }
-  function iniciar({fetchJSON}){
-    detener();resultado=null;indice=0;
-    const area=document.querySelector('#lab-modo');
-    const post=body=>fetchJSON('/api/laboratorio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    function modo(avanzada){
-      detener();document.querySelector('#modo-aprender').setAttribute('aria-pressed',String(!avanzada));document.querySelector('#modo-avanzado').setAttribute('aria-pressed',String(avanzada));
-      area.innerHTML=avanzada?avanzado():educativo();
-      if(!avanzada){const form=document.querySelector('#educativo');
-        const ejecutar=async e=>{e?.preventDefault();detener();const button=form.querySelector('button');
-          try {button.disabled=true;const raw=form.elements.llegadas.value.trim();
-            if(raw && raw.split(',').some(x=>!/^\s*\d+\s*$/.test(x)))throw Error('Escribe minutos enteros no negativos separados por comas.');
-            const data=await post({modo:'educativo',llegadas:raw?raw.split(',').map(Number):[],frecuencia:Number(form.elements.frecuencia.value),capacidad:Number(form.elements.capacidad.value)});
-            if(!form.isConnected)return;resultado=data;indice=0;document.querySelector('#lab-error').textContent='';pintar();
-            document.querySelector('#educativo-metricas').innerHTML=`<div class="section-heading"><h2>Lo que pasó con esta fila</h2><span>Resultados finales / no cambian durante la reproducción</span></div>${metricas(data)}<details class="card"><summary>Todos los pasajeros: llegada, abordaje y espera</summary><div class="table-wrap"><table><thead><tr><th>Pasajero</th><th>Llegada (min)</th><th>Abordaje (min)</th><th>Espera (min)</th></tr></thead><tbody>${data.llegadas.map((l,i)=>`<tr><td>P${i+1}</td><td>${l}</td><td>${data.abordajes[i]}</td><td>${data.esperas[i]}</td></tr>`).join('')}</tbody></table></div></details>${graficas(data)}`;
-          } catch(error){if(form.isConnected){const err=document.querySelector('#lab-error');err.className='error';err.textContent=error.message;form.elements.llegadas.setAttribute('aria-describedby','lab-error llegadas-help');}}
-          finally {button.disabled=false;}
-        };form.onsubmit=ejecutar;ejecutar();
-      }else{
-        const form=document.querySelector('#avanzado');form.elements.escenario.onchange=()=>{const ajustes={baja:[60,60],media:[300,60],intensa:[1500,60]}[form.elements.escenario.value];form.elements.cantidad.value=ajustes[0];form.elements.duracion.value=ajustes[1];};
-        form.onsubmit=async e=>{e.preventDefault();const button=form.querySelector('button'),out=document.querySelector('#comparacion');button.disabled=true;out.setAttribute('aria-busy','true');out.innerHTML='<p class="loading">Generando las mismas llegadas para A y B y calculando ambas filas…</p>';
-          try {const f=form.elements;const data=await post({modo:'avanzado',cantidad:Number(f.cantidad.value),duracion:Number(f.duracion.value),escenario:f.escenario.value,semilla:Number(f.semilla.value),a:{frecuencia:Number(f.fa.value),capacidad:Number(f.ca.value)},b:{frecuencia:Number(f.fb.value),capacidad:Number(f.cb.value)}});if(!out.isConnected)return;
-            const d=data.diferencias.espera_media;
-            const mensaje=d.b_menos_a<0?`B redujo la espera media en ${numero(-d.b_menos_a)} minutos${d.porcentaje!==null?' ('+numero(-d.porcentaje)+' %)':''}.`:d.b_menos_a>0?`A tiene una espera media ${numero(d.b_menos_a)} minutos menor que B.`:'Ambas configuraciones tienen la misma espera media.';
-            out.innerHTML=`<div class="comparison-summary"><span class="section-code">MISMAS LLEGADAS / SEMILLA ${data.semilla}</span><h2>${mensaje}</h2><p>Esta comparación no modela costos. No determina qué configuración es económicamente mejor.</p><details><summary>Verificar reproducibilidad</summary><p>Huella SHA-256 de la lista compartida: <code>${data.huella_llegadas}</code></p><p>Primeras llegadas (min): ${data.muestra_llegadas.join(', ')||'Sin pasajeros'}</p></details><button class="secondary" id="descargar">Descargar resumen JSON</button></div><div class="comparison-panels">${['a','b'].map(k=>`<article class="comparison-panel"><div class="scenario-label">CONFIGURACIÓN ${k.toUpperCase()} / CADA ${data[k].frecuencia} MIN · ${data[k].capacidad} CUPOS</div>${metricas(data[k])}</article>`).join('')}</div><div class="table-wrap"><table><caption>Diferencias B − A; porcentaje respecto a A</caption><thead><tr><th>Métrica</th><th>Diferencia absoluta</th><th>Diferencia relativa</th></tr></thead><tbody>${Object.entries(data.diferencias).map(([k,v])=>`<tr><td>${esc({espera_media:'Espera media (min)',espera_maxima:'Espera máxima (min)',cola_maxima:'Máxima fila (personas)',buses:'Buses con abordajes',ocupacion_media:'Ocupación (fracción de capacidad)'}[k])}</td><td>${numero(v.b_menos_a)}</td><td>${v.porcentaje===null?'No definida: A es cero':numero(v.porcentaje)+' %'}</td></tr>`).join('')}</tbody></table></div><div class="mode-tabs" role="group" aria-label="Gráficas de configuración"><button data-graficas="a" aria-pressed="true">Gráficas A</button><button data-graficas="b" aria-pressed="false">Gráficas B</button></div><div id="graficas-avanzadas">${graficas(data.a)}</div>`;
-            out.querySelectorAll('[data-graficas]').forEach(b=>b.onclick=()=>{out.querySelectorAll('[data-graficas]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));document.querySelector('#graficas-avanzadas').innerHTML=graficas(data[b.dataset.graficas]);});
-            document.querySelector('#descargar').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='pulso-urbano-experimento.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-          }catch(error){out.innerHTML=`<p class="error" role="alert">${esc(error.message)}</p>`;}
-          finally{button.disabled=false;out.removeAttribute('aria-busy');}
+  const number = (name, label, value, max = 1440, min = 1) =>
+    `<label>${label}<input type="number" name="${name}" value="${value}" min="${min}" max="${max}" step="1" required></label>`;
+  function html() {
+    return `<div class="lab-intro"><span class="lab-stamp">MODELO ACADÉMICO / R10</span><p>¿Qué pasa cuando llegan más pasajeros de los que puede llevar el siguiente bus? Explora una fila y cambia las condiciones. Las llegadas son sintéticas, no demanda observada de Bogotá.</p></div><div class="mode-tabs" role="group" aria-label="Modo del laboratorio"><button id="modo-aprender" aria-pressed="true">01 / Aprende con una fila</button><button id="modo-avanzado" aria-pressed="false">02 / Experimenta y compara</button></div><div id="lab-modo"></div>`;
+  }
+  function educativo() {
+    return `<div class="lab-layout"><section class="card query-panel"><div class="section-code">CONFIGURA / HASTA 40 PASAJEROS</div><h2>El primer bus no siempre alcanza.</h2><form id="educativo"><label>Llegadas · minutos desde cero<textarea name="llegadas" aria-describedby="llegadas-help">0, 0, 1, 2, 5, 5, 9</textarea></label><p id="llegadas-help" class="field-help">Un número por pasajero, separado por comas. Vacío: ningún pasajero. El orden de entrada identifica P1, P2…</p><div class="field-pair">${number("frecuencia", "Bus cada (min)", 5)}${number("capacidad", "Cupos por bus", 3, 10000)}</div><button>Calcular esta fila</button></form><div id="lab-error" role="alert"></div><details><summary>¿Qué está haciendo el algoritmo?</summary><p>La cola enlazada de motor/estructuras.py conserva FRENTE y FINAL. Encolar y desencolar cuestan O(1). Usar pop(0) desplazaría a los pasajeros restantes. El motor calcula los abordajes una sola vez; los controles solo navegan por estados derivados.</p></details></section><section id="escena" class="platform-panel" aria-live="polite"><p class="loading">Preparando la fila…</p></section></div><section id="educativo-metricas"></section>`;
+  }
+  function avanzado() {
+    return `<section class="experiment-config"><div><div class="section-code">ESCENARIOS SINTÉTICOS / HASTA 300.000 PASAJEROS</div><h2>Una demanda. Dos decisiones.</h2><p>Ambas configuraciones reciben exactamente las mismas llegadas. Compara espera y congestión, sin deducir costos económicos.</p></div><form id="avanzado"><label>Escenario<select name="escenario"><option value="baja">Demanda baja</option><option value="media" selected>Demanda media</option><option value="intensa">Hora pico intensa</option></select></label><div class="field-pair">${number("cantidad", "Pasajeros", 300, 300000, 0)}${number("duracion", "Periodo de llegadas (min)", 60)}</div>${number("semilla", "Semilla reproducible", 42, 2147483647, 0)}<div class="compare-config"><fieldset><legend>Configuración A</legend>${number("fa", "Bus cada (min)", 5)}${number("ca", "Cupos por bus", 30, 10000)}</fieldset><fieldset><legend>Configuración B</legend>${number("fb", "Bus cada (min)", 3)}${number("cb", "Cupos por bus", 30, 10000)}</fieldset></div><button>Comparar A / B →</button></form></section><section id="comparacion" aria-live="polite"></section>`;
+  }
+  function metricas(r) {
+    const m = r.metricas;
+    return `<div class="metric-grid">${[
+      [m.pasajeros, "Pasajeros simulados", ""],
+      [m.abordados, "Pasajeros abordados", ""],
+      [m.espera_media, "Espera media", "min"],
+      [m.espera_maxima, "Espera máxima", "min"],
+      [m.espera_mediana, "Mediana de espera", "min"],
+      [m.espera_p95, "Percentil 95 de espera", "min"],
+      [m.buses, "Buses con abordajes", ""],
+      [m.ocupacion_media * 100, "Ocupación media (buses usados)", "%"],
+      [m.cola_maxima, "Máxima fila antes de abordar", ""],
+      [m.ultimo_abordaje, "Último abordaje desde cero", "min"],
+    ]
+      .map((v) => indicador(...v))
+      .join("")}</div>`;
+  }
+  function graficas(r) {
+    const s = r.series;
+    return `<p class="field-help">${r.resumen_series ? "Series reducidas por bloques; se conserva el máximo de fila y los extremos. No se representan individualmente todos los eventos." : "Se representan los eventos calculados."} Puntos y barras admiten foco de teclado y detalles textuales.</p><div class="grid plots">${grafico("01 / Evolución de la fila", s.fila, ["Antes de abordar", "Después de abordar"], [1, 2], ["Minuto", "Pasajeros antes", "Pasajeros después"], true)}<section class="plot"><h3>02 / Ocupación de buses utilizados</h3><div class="occupancy-bars">${s.ocupacion.map(([t, n, v]) => `<button type="button" style="--ocupacion:${(n / r.capacidad) * 100}%" aria-label="Minuto ${t}: ${n} ocupados y ${v} libres" title="Minuto ${t}: ${n} ocupados / ${v} libres"><span></span></button>`).join("")}</div><p class="field-help">Una barra por bus mostrado. Relleno: cupos ocupados; trama: libres. No incluye salidas sin abordajes.</p><details><summary>Detalle de ocupación</summary><div class="table-wrap"><table><thead><tr><th>Minuto</th><th>Ocupados</th><th>Libres</th></tr></thead><tbody>${s.ocupacion.map((f) => `<tr>${f.map((x) => `<td>${numero(x)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></details></section>${barras("03 / Distribución de esperas", s.distribucion, (f) => `${f[0]}–${f[1]} min`, 2, "Pasajeros en cada intervalo inclusivo; se contabilizan todos.")}${grafico("04 / Llegadas frente a cupos por intervalo", s.demanda, ["Llegadas", "Cupos en el inicio"], [2, 3], ["Inicio del intervalo (min)", "Llegadas", "Cupos por bus"])}</div><p class="field-help">Demanda: intervalos [t,t+frecuencia), con un bus de capacidad fija en el inicio. Solo se muestran bloques con llegadas. No implica que quien llegue después del inicio aborde ese bus.</p>`;
+  }
+  function pintar() {
+    const focoAnterior = document.activeElement?.id;
+    if (!resultado || !document.querySelector("#escena")) {
+      detener();
+      return;
+    }
+    const p = resultado.pasos[indice],
+      total = resultado.pasos.length;
+    const token = (i, estado) =>
+      `<span class="passenger ${estado}" title="P${i + 1}: llegó en ${resultado.llegadas[i]}, aborda en ${resultado.abordajes[i]}">P${i + 1}</span>`;
+    const fases = {
+      inicio: "LISTOS PARA COMENZAR",
+      llegadas: "ENCOLAR / LLEGADAS",
+      bus: "BUS EN LA PLATAFORMA",
+      abordaje: "DESENCOLAR / ABORDAJE",
+      salida: "SALIDA / FILA RESTANTE",
+    };
+    document.querySelector("#escena").innerHTML =
+      `<div class="scene-heading"><div><span class="section-code">ESTACIÓN EXPERIMENTAL</span><h2>Minuto <strong>${p.minuto}</strong></h2></div><span class="phase-label">${fases[p.fase]}</span></div><div class="platform"><div class="queue-zone"><div class="step-label">ZONA DE ESPERA / ${p.fila.length} EN FILA</div><div class="fifo"><b>FRENTE →</b>${p.fila.map((i) => token(i, "waiting")).join("") || '<span class="muted">Fila vacía</span>'}<b>← FINAL</b></div></div><div class="bus-scene"><div class="bus-body"><span>BUS / ${resultado.capacidad} CUPOS</span><div>${p.abordando.map((i) => token(i, "boarding")).join("") || "<small>" + (["bus", "abordaje"].includes(p.fase) ? "Esperando abordaje" : "Fuera de plataforma") + "</small>"}</div><span>${p.fase === "abordaje" ? p.cupos : resultado.capacidad} cupos ${p.fase === "abordaje" ? "libres" : "por bus"}</span></div></div></div><p class="step-explanation">${esc(p.explicacion)}</p><div class="passenger-register">${resultado.llegadas
+        .map((a, i) => {
+          const estado = p.atendidos.includes(i)
+            ? "done"
+            : p.abordando.includes(i)
+              ? "boarding"
+              : p.fila.includes(i)
+                ? "waiting"
+                : "future";
+          const texto = {
+            done: "Ya abordó",
+            boarding: "Abordando",
+            waiting: "En fila",
+            future: "Aún no llegó",
+          }[estado];
+          return `<div>${token(i, estado)}<small>${texto}</small></div>`;
+        })
+        .join(
+          "",
+        )}</div><div class="playback"><button id="anterior" class="secondary" ${indice === 0 ? "disabled" : ""}>Anterior</button><button id="siguiente" ${indice === total - 1 ? "disabled" : ""}>Siguiente</button><button id="reproducir" class="secondary" ${indice === total - 1 ? "disabled" : ""}>Reproducir</button><button id="pausar" class="secondary" ${!timer ? "disabled" : ""}>Pausar</button><button id="reiniciar" class="secondary">Reiniciar</button></div><div class="playback-meta"><span>Paso ${indice + 1} de ${total} · Datos calculados una vez</span><label>Velocidad<select id="velocidad"><option value="1400">Lenta</option><option value="800" selected>Normal</option><option value="350">Rápida</option></select></label></div>`;
+    const velocidad = document.querySelector("#velocidad");
+    velocidad.value = String(resultado.velocidad || 800);
+    const mover = (cambio) => {
+      detener();
+      indice = Math.max(0, Math.min(total - 1, indice + cambio));
+      pintar();
+    };
+    document.querySelector("#anterior").onclick = () => mover(-1);
+    document.querySelector("#siguiente").onclick = () => mover(1);
+    document.querySelector("#reiniciar").onclick = () => {
+      detener();
+      indice = 0;
+      pintar();
+    };
+    document.querySelector("#pausar").onclick = () => {
+      detener();
+      pintar();
+    };
+    const play = () => {
+      detener();
+      timer = setInterval(() => {
+        if (indice < total - 1) {
+          indice++;
+          pintar();
+        }
+        if (indice === total - 1) {
+          detener();
+          pintar();
+        }
+      }, resultado.velocidad || 800);
+      pintar();
+    };
+    document.querySelector("#reproducir").onclick = play;
+    if (
+      [
+        "anterior",
+        "siguiente",
+        "reiniciar",
+        "reproducir",
+        "pausar",
+        "velocidad",
+      ].includes(focoAnterior)
+    ) {
+      const destino = document.getElementById(focoAnterior);
+      if (destino && !destino.disabled) destino.focus({ preventScroll: true });
+    }
+    velocidad.onchange = () => {
+      resultado.velocidad = Number(velocidad.value);
+      if (timer) play();
+    };
+  }
+  function iniciar({ fetchJSON }) {
+    detener();
+    resultado = null;
+    indice = 0;
+    const area = document.querySelector("#lab-modo");
+    const post = (body) =>
+      fetchJSON("/api/laboratorio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    function modo(avanzada) {
+      detener();
+      document
+        .querySelector("#modo-aprender")
+        .setAttribute("aria-pressed", String(!avanzada));
+      document
+        .querySelector("#modo-avanzado")
+        .setAttribute("aria-pressed", String(avanzada));
+      area.innerHTML = avanzada ? avanzado() : educativo();
+      if (!avanzada) {
+        const form = document.querySelector("#educativo");
+        const ejecutar = async (e) => {
+          e?.preventDefault();
+          detener();
+          const button = form.querySelector("button");
+          try {
+            button.disabled = true;
+            const raw = form.elements.llegadas.value.trim();
+            if (raw && raw.split(",").some((x) => !/^\s*\d+\s*$/.test(x)))
+              throw Error(
+                "Escribe minutos enteros no negativos separados por comas.",
+              );
+            const data = await post({
+              modo: "educativo",
+              llegadas: raw ? raw.split(",").map(Number) : [],
+              frecuencia: Number(form.elements.frecuencia.value),
+              capacidad: Number(form.elements.capacidad.value),
+            });
+            if (!form.isConnected) return;
+            resultado = data;
+            indice = 0;
+            document.querySelector("#lab-error").textContent = "";
+            pintar();
+            document.querySelector("#educativo-metricas").innerHTML =
+              `<div class="section-heading"><h2>Lo que pasó con esta fila</h2><span>Resultados finales / no cambian durante la reproducción</span></div>${metricas(data)}<details class="card"><summary>Todos los pasajeros: llegada, abordaje y espera</summary><div class="table-wrap"><table><thead><tr><th>Pasajero</th><th>Llegada (min)</th><th>Abordaje (min)</th><th>Espera (min)</th></tr></thead><tbody>${data.llegadas.map((l, i) => `<tr><td>P${i + 1}</td><td>${l}</td><td>${data.abordajes[i]}</td><td>${data.esperas[i]}</td></tr>`).join("")}</tbody></table></div></details>${graficas(data)}`;
+          } catch (error) {
+            if (form.isConnected) {
+              const err = document.querySelector("#lab-error");
+              err.className = "error";
+              err.textContent = error.message;
+              form.elements.llegadas.setAttribute(
+                "aria-describedby",
+                "lab-error llegadas-help",
+              );
+            }
+          } finally {
+            button.disabled = false;
+          }
+        };
+        form.onsubmit = ejecutar;
+        ejecutar();
+      } else {
+        const form = document.querySelector("#avanzado");
+        form.elements.escenario.onchange = () => {
+          const ajustes = {
+            baja: [60, 60],
+            media: [300, 60],
+            intensa: [1500, 60],
+          }[form.elements.escenario.value];
+          form.elements.cantidad.value = ajustes[0];
+          form.elements.duracion.value = ajustes[1];
+        };
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const button = form.querySelector("button"),
+            out = document.querySelector("#comparacion");
+          button.disabled = true;
+          out.setAttribute("aria-busy", "true");
+          out.innerHTML =
+            '<p class="loading">Generando las mismas llegadas para A y B y calculando ambas filas…</p>';
+          try {
+            const f = form.elements;
+            const data = await post({
+              modo: "avanzado",
+              cantidad: Number(f.cantidad.value),
+              duracion: Number(f.duracion.value),
+              escenario: f.escenario.value,
+              semilla: Number(f.semilla.value),
+              a: {
+                frecuencia: Number(f.fa.value),
+                capacidad: Number(f.ca.value),
+              },
+              b: {
+                frecuencia: Number(f.fb.value),
+                capacidad: Number(f.cb.value),
+              },
+            });
+            if (!out.isConnected) return;
+            const d = data.diferencias.espera_media;
+            const mensaje =
+              d.b_menos_a < 0
+                ? `B redujo la espera media en ${numero(-d.b_menos_a)} minutos${d.porcentaje !== null ? " (" + numero(-d.porcentaje) + " %)" : ""}.`
+                : d.b_menos_a > 0
+                  ? `A tiene una espera media ${numero(d.b_menos_a)} minutos menor que B.`
+                  : "Ambas configuraciones tienen la misma espera media.";
+            out.innerHTML = `<div class="comparison-summary"><span class="section-code">MISMAS LLEGADAS / SEMILLA ${data.semilla}</span><h2>${mensaje}</h2><p>Esta comparación no modela costos. No determina qué configuración es económicamente mejor.</p><details><summary>Verificar reproducibilidad</summary><p>Huella SHA-256 de la lista compartida: <code>${data.huella_llegadas}</code></p><p>Primeras llegadas (min): ${data.muestra_llegadas.join(", ") || "Sin pasajeros"}</p></details><button class="secondary" id="descargar">Descargar resumen JSON</button></div><div class="comparison-panels">${["a", "b"].map((k) => `<article class="comparison-panel"><div class="scenario-label">CONFIGURACIÓN ${k.toUpperCase()} / CADA ${data[k].frecuencia} MIN · ${data[k].capacidad} CUPOS</div>${metricas(data[k])}</article>`).join("")}</div><div class="table-wrap"><table><caption>Diferencias B − A; porcentaje respecto a A</caption><thead><tr><th>Métrica</th><th>Diferencia absoluta</th><th>Diferencia relativa</th></tr></thead><tbody>${Object.entries(
+              data.diferencias,
+            )
+              .map(
+                ([k, v]) =>
+                  `<tr><td>${esc({ espera_media: "Espera media (min)", espera_maxima: "Espera máxima (min)", cola_maxima: "Máxima fila (personas)", buses: "Buses con abordajes", ocupacion_media: "Ocupación (fracción de capacidad)" }[k])}</td><td>${numero(v.b_menos_a)}</td><td>${v.porcentaje === null ? "No definida: A es cero" : numero(v.porcentaje) + " %"}</td></tr>`,
+              )
+              .join(
+                "",
+              )}</tbody></table></div><div class="mode-tabs" role="group" aria-label="Gráficas de configuración"><button data-graficas="a" aria-pressed="true">Gráficas A</button><button data-graficas="b" aria-pressed="false">Gráficas B</button></div><div id="graficas-avanzadas">${graficas(data.a)}</div>`;
+            out.querySelectorAll("[data-graficas]").forEach(
+              (b) =>
+                (b.onclick = () => {
+                  out
+                    .querySelectorAll("[data-graficas]")
+                    .forEach((x) =>
+                      x.setAttribute("aria-pressed", String(x === b)),
+                    );
+                  document.querySelector("#graficas-avanzadas").innerHTML =
+                    graficas(data[b.dataset.graficas]);
+                }),
+            );
+            document.querySelector("#descargar").onclick = () => {
+              const url = URL.createObjectURL(
+                new Blob([JSON.stringify(data, null, 2)], {
+                  type: "application/json",
+                }),
+              );
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "pulso-urbano-experimento.json";
+              a.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            };
+          } catch (error) {
+            out.innerHTML = `<p class="error" role="alert">${esc(error.message)}</p>`;
+          } finally {
+            button.disabled = false;
+            out.removeAttribute("aria-busy");
+          }
         };
       }
     }
-    document.querySelector('#modo-aprender').onclick=()=>modo(false);document.querySelector('#modo-avanzado').onclick=()=>modo(true);modo(false);
+    document.querySelector("#modo-aprender").onclick = () => modo(false);
+    document.querySelector("#modo-avanzado").onclick = () => modo(true);
+    modo(false);
   }
-  return {html,iniciar,detener};
+  return { html, iniciar, detener };
 })();
