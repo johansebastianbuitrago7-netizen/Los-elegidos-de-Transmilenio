@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas · Planeador TransMilenio</title>
+  <meta name="description" content="Atlas: planeador de viajes sobre la red programada de TransMilenio (julio de 2021).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/atlas.css') }}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2316181D'/%3E%3Cpath d='M6 22h20' stroke='%23F4B400' stroke-width='4'/%3E%3Ccircle cx='16' cy='22' r='4' fill='%23F2EEE3' stroke='%2316181D' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="cabecera">
+  <div class="cabecera__marca">
+    <a href="#portada" class="marca" aria-label="Atlas, ir a la portada">
+      <span class="marca__sello" aria-hidden="true">A</span>
+      <span class="marca__texto">ATLAS<small>Planeador TransMilenio</small></span>
+    </a>
+    <p class="cabecera__nota">Red programada · julio 2021 · <strong>no es tiempo real</strong></p>
+  </div>
+  <nav class="linea" aria-label="Láminas del atlas">
+    <ol class="linea__paradas">
+      <li><a href="#portada" data-ir="portada"><span class="linea__num">00</span><span class="linea__nombre">Portada</span></a></li>
+      <li><a href="#estaciones" data-ir="estaciones"><span class="linea__num">01</span><span class="linea__nombre">Estaciones</span></a></li>
+      <li><a href="#horarios" data-ir="horarios"><span class="linea__num">02</span><span class="linea__nombre">Horarios</span></a></li>
+      <li><a href="#viaje" data-ir="viaje"><span class="linea__num">03</span><span class="linea__nombre">Viaje</span></a></li>
+      <li><a href="#ranking" data-ir="ranking"><span class="linea__num">04</span><span class="linea__nombre">Ranking</span></a></li>
+      <li><a href="#operacion" data-ir="operacion"><span class="linea__num">05</span><span class="linea__nombre">Operación</span></a></li>
+      <li><a href="#fila" data-ir="fila"><span class="linea__num">06</span><span class="linea__nombre">Hora pico</span></a></li>
+      <li><a href="#rendimiento" data-ir="rendimiento"><span class="linea__num">07</span><span class="linea__nombre">Rendimiento</span></a></li>
+    </ol>
+  </nav>
+</header>
+
+<main id="contenido" tabindex="-1">
+
+<!-- ============================================================ PORTADA -->
+<section class="lamina lamina--portada" data-lamina="portada" aria-labelledby="t-portada">
+  <div class="portada">
+    <div class="portada__titular">
+      <p class="sobretitulo">Lámina 00 · Portada</p>
+      <h1 id="t-portada" class="titular">Bogotá<br>se lee<br>en <em>líneas</em>.</h1>
+      <p class="entradilla">Un atlas de la red troncal: dónde está cada estación, qué bus pasa y cuándo,
+        cómo llegar con a lo sumo un transbordo y qué ocurre en un andén a la hora pico.</p>
+      <form class="buscador-portada" data-accion="buscar-portada" role="search">
+        <label for="portada-buscar" class="rotulo">Buscar una estación</label>
+        <div class="campo-combo" data-combo="portada-buscar">
+          <input id="portada-buscar" class="campo campo--grande" autocomplete="off" placeholder="Ej. CALLE 26, PORTAL…">
+        </div>
+        <button class="boton boton--tinta">Ver ficha</button>
+      </form>
+    </div>
+    <aside class="ficha-tecnica" aria-labelledby="t-ficha">
+      <h2 id="t-ficha" class="ficha-tecnica__titulo">Ficha técnica</h2>
+      <dl class="cifras" data-resumen>
+        <div><dt>Estaciones</dt><dd data-cifra="estaciones">—</dd></div>
+        <div><dt>Rutas dirigidas</dt><dd data-cifra="rutas">—</dd></div>
+        <div><dt>Paradas en rutas</dt><dd data-cifra="paradas">—</dd></div>
+        <div><dt>Eventos de horario</dt><dd data-cifra="eventos">—</dd></div>
+      </dl>
+      <p class="pie">Cifras leídas por el motor al arrancar desde <code>datos/*.csv</code>.</p>
+    </aside>
+  </div>
+
+  <div class="portada__franja">
+    <article class="tablero" aria-labelledby="t-tablero">
+      <header class="tablero__cabeza"><h2 id="t-tablero">Estaciones con más buses al día</h2><span class="etiqueta">R6</span></header>
+      <ol class="tablero__filas" data-tablero></ol>
+    </article>
+    <article class="muestra-ruta" aria-labelledby="t-muestra">
+      <header class="tablero__cabeza tablero__cabeza--clara">
+        <h2 id="t-muestra">Una ruta, de punta a punta</h2>
+        <label class="rotulo-linea"><span class="sr">Ruta</span><select class="campo campo--mini" data-muestra-ruta></select></label>
+      </header>
+      <div class="muestra-ruta__lienzo" data-muestra></div>
+      <p class="pie">Diagrama esquemático: el espaciado es uniforme y no representa distancias reales.</p>
+    </article>
+  </div>
+
+  <ul class="atajos" aria-label="Accesos directos">
+    <li><a href="#horarios"><strong>¿A qué hora pasa?</strong><span>Estación → ruta → hora</span></a></li>
+    <li><a href="#viaje"><strong>¿Cómo llego?</strong><span>Máximo un transbordo, menos paradas</span></a></li>
+    <li><a href="#fila"><strong>Laboratorio de hora pico</strong><span>Una cola FIFO, paso a paso</span></a></li>
+  </ul>
+</section>
+
+<!-- ======================================================== ESTACIONES -->
+<section class="lamina" data-lamina="estaciones" aria-labelledby="t-est" hidden>
+  <header class="lamina__cabeza">
+    <p class="placa"><span>01</span>R1 · R2 · R3</p>
+    <h1 id="t-est">Estaciones</h1>
+    <p class="entradilla">Consulta exacta, autocompletado mientras escribes y un índice alfabético por rangos.
+      Las estaciones cerradas no aparecen en autocompletado ni en rangos.</p>
+  </header>
+  <div class="rejilla rejilla--2">
+    <div class="tarjeta">
+      <h2 class="tarjeta__titulo">Ficha de estación <span class="etiqueta">R1 + R2</span></h2>
+      <form class="formulario" data-accion="ficha">
+        <label for="est-nombre" class="rotulo">Nombre</label>
+        <div class="campo-combo" data-combo="est-nombre">
+          <input id="est-nombre" class="campo" autocomplete="off" placeholder="Escribe: CAL, PORTAL, AV…">
+        </div>
+        <button class="boton boton--tinta">Consultar</button>
+      </form>
+      <div data-ficha aria-live="polite"></div>
+    </div>
+    <div class="tarjeta">
+      <h2 class="tarjeta__titulo">Índice por rango <span class="etiqueta">R3</span></h2>
+      <form class="formulario formulario--fila" data-accion="rango">
+        <div><label for="rango-desde" class="rotulo">Desde</label><input id="rango-desde" class="campo" value="CALLE 26"></div>
+        <div><label for="rango-hasta" class="rotulo">Hasta</label><input id="rango-hasta" class="campo" value="CALLE 80"></div>
+        <button class="boton">Listar</button>
+      </form>
+      <div data-rango aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================== HORARIOS -->
+<section class="lamina" data-lamina="horarios" aria-labelledby="t-hor" hidden>
+  <header class="lamina__cabeza">
+    <p class="placa"><span>02</span>R4</p>
+    <h1 id="t-hor">Horarios</h1>
+    <p class="entradilla">Elige una estación, luego una de las rutas que paran ahí —con sus extremos reales— y una hora.
+      Son registros programados de 2021: el CSV no distingue llegada de salida, por eso hablamos de <em>registros de paso</em>.</p>
+  </header>
+  <form class="pasos" data-accion="horario">
+    <div class="paso">
+      <span class="paso__n">1</span>
+      <label for="hor-estacion" class="rotulo">Estación</label>
+      <div class="campo-combo" data-combo="hor-estacion"><input id="hor-estacion" class="campo" autocomplete="off" placeholder="PORTAL NORTE"></div>
+    </div>
+    <div class="paso">
+      <span class="paso__n">2</span>
+      <label for="hor-ruta" class="rotulo">Ruta que para ahí</label>
+      <select id="hor-ruta" class="campo" disabled><option value="">Primero elige estación</option></select>
+    </div>
+    <div class="paso paso--corto">
+      <span class="paso__n">3</span>
+      <label for="hor-hora" class="rotulo">Hora</label>
+      <input id="hor-hora" class="campo campo--mono" type="time" value="09:25" required>
+    </div>
+    <button class="boton boton--tinta paso__enviar">Consultar</button>
+  </form>
+  <div data-horario aria-live="polite"></div>
+</section>
+
+<!-- ============================================================= VIAJE -->
+<section class="lamina" data-lamina="viaje" aria-labelledby="t-via" hidden>
+  <header class="lamina__cabeza">
+    <p class="placa"><span>03</span>R5</p>
+    <h1 id="t-via">Planear un viaje</h1>
+    <p class="entradilla">El viaje directo o con un solo transbordo que pase por menos paradas, respetando el sentido de cada ruta
+      y sin subir, bajar ni transbordar en estaciones cerradas.</p>
+  </header>
+  <form class="viaje-form" data-accion="viaje">
+    <div>
+      <label for="via-origen" class="rotulo">Origen</label>
+      <div class="campo-combo" data-combo="via-origen"><input id="via-origen" class="campo" autocomplete="off" placeholder="PORTAL 80"></div>
+    </div>
+    <button type="button" class="boton boton--icono" data-intercambiar aria-label="Intercambiar origen y destino">⇄</button>
+    <div>
+      <label for="via-destino" class="rotulo">Destino</label>
+      <div class="campo-combo" data-combo="via-destino"><input id="via-destino" class="campo" autocomplete="off" placeholder="PORTAL USME"></div>
+    </div>
+    <button class="boton boton--tinta">Trazar</button>
+  </form>
+  <div data-viaje aria-live="polite"></div>
+</section>
+
+<!-- =========================================================== RANKING -->
+<section class="lamina" data-lamina="ranking" aria-labelledby="t-ran" hidden>
+  <header class="lamina__cabeza">
+    <p class="placa"><span>04</span>R6</p>
+    <h1 id="t-ran">Ranking de estaciones</h1>
+    <p class="entradilla">Las estaciones abiertas con más registros de paso de buses al día, sumando las rutas que hoy paran en ellas.
+      Se recalcula solo cuando cierras, reabres o editas una ruta.</p>
+  </header>
+  <form class="formulario formulario--fila formulario--estrecho" data-accion="ranking">
+    <div><label for="ran-k" class="rotulo">Cuántas (k)</label><input id="ran-k" class="campo campo--mono" type="number" min="1" max="200" value="15"></div>
+    <button class="boton">Actualizar</button>
+  </form>
+  <div data-ranking aria-live="polite"></div>
+</section>
+
+<!-- ========================================================= OPERACIÓN -->
+<section class="lamina" data-lamina="operacion" aria-labelledby="t-ope" hidden>
+  <header class="lamina__cabeza">
+    <p class="placa"><span>05</span>R7 · R8 · R9</p>
+    <h1 id="t-ope">Operación de la red</h1>
+    <p class="entradilla">Edita recorridos, cierra estaciones y recorre el historial con deshacer y rehacer.
+      Todos los cambios viven en la memoria del servidor y se pueden revertir.</p>
+  </header>
+  <div class="operacion">
+    <div class="tarjeta operacion__ruta">
+      <h2 class="tarjeta__titulo">Recorrido de una ruta <span class="etiqueta">R7</span></h2>
+      <div class="formulario formulario--fila">
+        <div class="crece"><label for="ope-ruta" class="rotulo">Ruta</label><select id="ope-ruta" class="campo"></select></div>
+        <div class="conmutador" role="group" aria-label="Sentido de lectura">
+          <button type="button" class="conmutador__op" aria-pressed="true" data-sentido="0">Ida</button>
+          <button type="button" class="conmutador__op" aria-pressed="false" data-sentido="1">Al revés</button>
+        </div>
+      </div>
+      <ol class="tira" data-tira aria-live="polite"></ol>
+      <form class="formulario formulario--fila agregar" data-accion="agregar">
+        <div class="crece"><label for="ope-nueva" class="rotulo">Agregar estación</label>
+          <div class="campo-combo" data-combo="ope-nueva"><input id="ope-nueva" class="campo" autocomplete="off"></div></div>
+        <div class="crece"><label for="ope-despues" class="rotulo">Después de</label><select id="ope-despues" class="campo"></select></div>
+        <button class="boton">Agregar</button>
+      </form>
+    </div>
+    <div class="operacion__lateral">
+      <div class="tarjeta">
+        <h2 class="tarjeta__titulo">Cerrar o reabrir <span class="etiqueta">R8</span></h2>
+        <form class="formulario formulario--fila" data-accion="cerrar">
+          <div class="crece"><label for="ope-cerrar" class="rotulo">Estación abierta</label>
+            <div class="campo-combo" data-combo="ope-cerrar"><input id="ope-cerrar" class="campo" autocomplete="off"></div></div>
+          <button class="boton boton--ladrillo">Cerrar</button>
+        </form>
+        <div data-cerradas></div>
+      </div>
+      <div class="tarjeta">
+        <h2 class="tarjeta__titulo">Historial <span class="etiqueta">R9</span></h2>
+        <div class="botonera">
+          <button type="button" class="boton" data-deshacer>↶ Deshacer</button>
+          <button type="button" class="boton" data-rehacer>Rehacer ↷</button>
+          <button type="button" class="boton boton--texto" data-reiniciar>Recargar CSV</button>
+        </div>
+        <div class="pilas" data-pilas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== FILA -->
+<section class="lamina" data-lamina="fila" aria-labelledby="t-fil" hidden>
+  <header class="lamina__cabeza">
+    <p class="placa"><span>06</span>R10</p>
+    <h1 id="t-fil">Laboratorio de hora pico</h1>
+    <p class="entradilla">Un andén es una cola FIFO: quien llega primero sube primero. Los buses salen en los minutos 0, f, 2f…
+      con cupo limitado, y quien llega justo en el minuto del bus alcanza a subir. Todo lo que ves lo calcula <code>simular_fila</code> en Python.</p>
+  </header>
+  <div class="pestanas" role="tablist" aria-label="Modos del laboratorio">
+    <button role="tab" id="tab-edu" aria-controls="panel-edu" aria-selected="true" data-tab="edu">Educativo</button>
+    <button role="tab" id="tab-ava" aria-controls="panel-ava" aria-selected="false" data-tab="ava" tabindex="-1">Escenario masivo</button>
+    <button role="tab" id="tab-ab" aria-controls="panel-ab" aria-selected="false" data-tab="ab" tabindex="-1">Comparador A/B</button>
+  </div>
+
+  <div role="tabpanel" id="panel-edu" aria-labelledby="tab-edu" class="panel">
+    <form class="formulario formulario--fila" data-accion="fila-edu">
+      <div class="crece"><label for="edu-llegadas" class="rotulo">Llegadas (minutos, separados por coma)</label>
+        <input id="edu-llegadas" class="campo campo--mono" value="0, 0, 1, 2, 5, 5, 9"></div>
+      <div><label for="edu-f" class="rotulo">Frecuencia</label><input id="edu-f" class="campo campo--mono" type="number" min="1" value="5"></div>
+      <div><label for="edu-c" class="rotulo">Capacidad</label><input id="edu-c" class="campo campo--mono" type="number" min="1" value="3"></div>
+      <button class="boton boton--tinta">Simular</button>
+    </form>
+    <p class="pie">Hasta 40 personas. Ejemplos: <button type="button" class="enlace" data-ejemplo="0,0,1,2,5,5,9|5|3">enunciado</button> ·
+      <button type="button" class="enlace" data-ejemplo="9,0,5,1,0,5,2|5|3">desordenado</button> ·
+      <button type="button" class="enlace" data-ejemplo="0,1,1,1,2,2,3,3,3,4,4,4,6,7|4|2">saturado</button></p>
+    <div data-edu></div>
+  </div>
+
+  <div role="tabpanel" id="panel-ava" aria-labelledby="tab-ava" class="panel" hidden>
+    <form class="parametros" data-accion="fila-ava">
+      <div><label for="ava-p" class="rotulo">Pasajeros</label><input id="ava-p" class="campo campo--mono" type="number" min="1" max="300000" value="14000"></div>
+      <div><label for="ava-d" class="rotulo">Duración (min)</label><input id="ava-d" class="campo campo--mono" type="number" min="1" max="1440" value="180"></div>
+      <div><label for="ava-f" class="rotulo">Frecuencia</label><input id="ava-f" class="campo campo--mono" type="number" min="1" value="2"></div>
+      <div><label for="ava-c" class="rotulo">Capacidad</label><input id="ava-c" class="campo campo--mono" type="number" min="1" value="160"></div>
+      <div><label for="ava-dem" class="rotulo">Demanda</label>
+        <select id="ava-dem" class="campo"><option value="pico">Un pico</option><option value="dos_picos">Dos picos</option><option value="uniforme">Uniforme</option><option value="oleadas">Oleadas</option></select></div>
+      <div><label for="ava-s" class="rotulo">Semilla</label><input id="ava-s" class="campo campo--mono" type="number" min="0" value="2021"></div>
+      <button class="boton boton--tinta">Simular</button>
+    </form>
+    <p class="pie">Escenarios sintéticos reproducibles: no son predicciones ni datos reales de TransMilenio.</p>
+    <div data-ava aria-live="polite"></div>
+  </div>
+
+  <div role="tabpanel" id="panel-ab" aria-labelledby="tab-ab" class="panel" hidden>
+    <form class="comparador-form" data-accion="fila-ab">
+      <fieldset class="parametros parametros--base"><legend>Llegadas compartidas</legend>
+        <div><label for="ab-p" class="rotulo">Pasajeros</label><input id="ab-p" class="campo campo--mono" type="number" min="1" max="300000" value="10000"></div>
+        <div><label for="ab-d" class="rotulo">Duración</label><input id="ab-d" class="campo campo--mono" type="number" min="1" value="180"></div>
+        <div><label for="ab-dem" class="rotulo">Demanda</label>
+          <select id="ab-dem" class="campo"><option value="pico">Un pico</option><option value="dos_picos">Dos picos</option><option value="uniforme">Uniforme</option><option value="oleadas">Oleadas</option></select></div>
+        <div><label for="ab-s" class="rotulo">Semilla</label><input id="ab-s" class="campo campo--mono" type="number" min="0" value="7"></div>
+      </fieldset>
+      <fieldset class="parametros config config--a"><legend>Configuración A</legend>
+        <div><label for="ab-fa" class="rotulo">Frecuencia</label><input id="ab-fa" class="campo campo--mono" type="number" min="1" value="3"></div>
+        <div><label for="ab-ca" class="rotulo">Capacidad</label><input id="ab-ca" class="campo campo--mono" type="number" min="1" value="160"></div>
+      </fieldset>
+      <fieldset class="parametros config config--b"><legend>Configuración B</legend>
+        <div><label for="ab-fb" class="rotulo">Frecuencia</label><input id="ab-fb" class="campo campo--mono" type="number" min="1" value="5"></div>
+        <div><label for="ab-cb" class="rotulo">Capacidad</label><input id="ab-cb" class="campo campo--mono" type="number" min="1" value="250"></div>
+      </fieldset>
+      <button class="boton boton--tinta">Comparar</button>
+    </form>
+    <div data-ab aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ======================================================= RENDIMIENTO -->
+<section class="lamina" data-lamina="rendimiento" aria-labelledby="t-ren" hidden>
+  <header class="lamina__cabeza">
+    <p class="placa"><span>07</span>R11</p>
+    <h1 id="t-ren">Panel de rendimiento</h1>
+    <p class="entradilla">Se generan redes sintéticas de tamaño n, 2n, 4n… en carpetas temporales (nunca la red que estás usando),
+      se cronometra cada operación y se compara contra la curva que esperábamos. La carga se mide aparte de las consultas.</p>
+  </header>
+  <form class="formulario formulario--fila formulario--estrecho" data-accion="rendimiento">
+    <div><label for="ren-max" class="rotulo">Tamaño máximo</label>
+      <select id="ren-max" class="campo"><option value="1000">1.000 estaciones</option><option value="2000" selected>2.000 estaciones</option><option value="4000">4.000 estaciones</option></select></div>
+    <div><label for="ren-rep" class="rotulo">Repeticiones</label><input id="ren-rep" class="campo campo--mono" type="number" min="1" max="9" value="3"></div>
+    <button class="boton boton--tinta">Medir ahora</button>
+  </form>
+  <div data-rendimiento aria-live="polite"></div>
+</section>
+</main>
+
+<footer class="pie-pagina">
+  <p><strong>Atlas</strong> · Los Elegidos de TransMilenio · Estructuras de Datos y Algoritmos.
+    Datos: conversión del GTFS de TransMilenio (julio de 2021). Horarios programados, no en tiempo real.</p>
+</footer>
+
+<div class="aviso" role="status" aria-live="polite" data-aviso hidden></div>
+
+<script src="{{ url_for('static', filename='js/nucleo.js') }}"></script>
+<script src="{{ url_for('static', filename='js/graficos.js') }}"></script>
+<script src="{{ url_for('static', filename='js/portada.js') }}"></script>
+<script src="{{ url_for('static', filename='js/estaciones.js') }}"></script>
+<script src="{{ url_for('static', filename='js/horarios.js') }}"></script>
+<script src="{{ url_for('static', filename='js/viaje.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ranking.js') }}"></script>
+<script src="{{ url_for('static', filename='js/operacion.js') }}"></script>
+<script src="{{ url_for('static', filename='js/fila.js') }}"></script>
+<script src="{{ url_for('static', filename='js/rendimiento.js') }}"></script>
+</body>
+</html>
